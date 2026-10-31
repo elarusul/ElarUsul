@@ -1,0 +1,405 @@
+<section class="stacking" (click)="closeHint()">
+  <h1 class="banner">
+    <span class="rule"></span><span class="gem"></span>Kalkulator staków · Epik<span class="gem"></span><span class="rule"></span>
+  </h1>
+
+  <div class="howto">
+    <h2>Jak to działa przeciw epikowi</h2>
+    <ol>
+      <li>Epik zabija Twój stak z <strong>największym łącznym HP</strong> — wszystko i tak ginie.</li>
+      <li>Twoje staki atakują w kolejności <strong>siły</strong> (najsilniejszy pierwszy).</li>
+      <li>Cel: tanie / niższe tiery giną pierwsze, drogie / wysokie biją jak najdłużej.</li>
+      <li>Klasyczna piramida: ok. <strong>2× więcej</strong> jednostek na każdy niższy poziom.</li>
+      <li>Limity weź z ekranu marszu <em>po wyborze kapitana</em>: Leadership / Dominance / Authority.</li>
+    </ol>
+  </div>
+
+  <form class="panel" (submit)="$event.preventDefault()">
+    <h2>Twoje limity marszu</h2>
+    <div class="fields">
+      <label>
+        <span class="label-row">
+          Leadership
+          <button
+            type="button"
+            class="info"
+            [class.is-open]="openHint() === 'leadership'"
+            [attr.aria-expanded]="openHint() === 'leadership'"
+            aria-label="Informacja o polu Leadership"
+            (click)="toggleHint('leadership', $event)"
+          >
+            i
+          </button>
+        </span>
+        @if (openHint() === 'leadership') {
+          <span class="tip" role="tooltip" (click)="$event.stopPropagation()">
+            <strong>{{ hints['leadership'].title }}</strong>
+            {{ hints['leadership'].text }}
+          </span>
+        }
+        <input
+          type="number"
+          min="0"
+          [ngModel]="leadership()"
+          (ngModelChange)="setNumber(leadership, $event)"
+          name="leadership"
+        />
+      </label>
+
+      <label>
+        <span class="label-row">
+          Dominance
+          <button
+            type="button"
+            class="info"
+            [class.is-open]="openHint() === 'dominance'"
+            [attr.aria-expanded]="openHint() === 'dominance'"
+            aria-label="Informacja o polu Dominance"
+            (click)="toggleHint('dominance', $event)"
+          >
+            i
+          </button>
+        </span>
+        @if (openHint() === 'dominance') {
+          <span class="tip" role="tooltip" (click)="$event.stopPropagation()">
+            <strong>{{ hints['dominance'].title }}</strong>
+            {{ hints['dominance'].text }}
+          </span>
+        }
+        <input
+          type="number"
+          min="0"
+          [ngModel]="dominance()"
+          (ngModelChange)="setNumber(dominance, $event)"
+          name="dominance"
+        />
+      </label>
+
+      <label>
+        <span class="label-row">
+          Authority
+          <button
+            type="button"
+            class="info"
+            [class.is-open]="openHint() === 'authority'"
+            [attr.aria-expanded]="openHint() === 'authority'"
+            aria-label="Informacja o polu Authority"
+            (click)="toggleHint('authority', $event)"
+          >
+            i
+          </button>
+        </span>
+        @if (openHint() === 'authority') {
+          <span class="tip" role="tooltip" (click)="$event.stopPropagation()">
+            <strong>{{ hints['authority'].title }}</strong>
+            {{ hints['authority'].text }}
+          </span>
+        }
+        <input
+          type="number"
+          min="0"
+          [ngModel]="authority()"
+          (ngModelChange)="setNumber(authority, $event)"
+          name="authority"
+        />
+      </label>
+
+      <label>
+        <span class="label-row">
+          Typ wojska
+          <button
+            type="button"
+            class="info"
+            [class.is-open]="openHint() === 'role'"
+            [attr.aria-expanded]="openHint() === 'role'"
+            aria-label="Informacja o typie wojska"
+            (click)="toggleHint('role', $event)"
+          >
+            i
+          </button>
+        </span>
+        @if (openHint() === 'role') {
+          <span class="tip" role="tooltip" (click)="$event.stopPropagation()">
+            <strong>{{ hints['role'].title }}</strong>
+            {{ hints['role'].text }}
+          </span>
+        }
+        <select
+          [ngModel]="role()"
+          (ngModelChange)="role.set($event)"
+          name="role"
+        >
+          @for (r of roles; track r.id) {
+            <option [value]="r.id">{{ r.label }}</option>
+          }
+        </select>
+      </label>
+    </div>
+
+    <h2>Odblokowane poziomy i liczba staków</h2>
+    <div class="fields">
+      <label>
+        <span class="label-row">
+          Max G (gwardia)
+          <button
+            type="button"
+            class="info"
+            [class.is-open]="openHint() === 'maxG'"
+            [attr.aria-expanded]="openHint() === 'maxG'"
+            aria-label="Informacja o max G"
+            (click)="toggleHint('maxG', $event)"
+          >
+            i
+          </button>
+        </span>
+        @if (openHint() === 'maxG') {
+          <span class="tip" role="tooltip" (click)="$event.stopPropagation()">
+            <strong>{{ hints['maxG'].title }}</strong>
+            {{ hints['maxG'].text }}
+          </span>
+        }
+        <input
+          type="number"
+          min="3"
+          max="10"
+          [ngModel]="maxGuardsmenTier()"
+          (ngModelChange)="setNumber(maxGuardsmenTier, $event)"
+          name="maxG"
+        />
+      </label>
+
+      <label>
+        <span class="label-row">
+          Staki G
+          <button
+            type="button"
+            class="info"
+            [class.is-open]="openHint() === 'gStacks'"
+            [attr.aria-expanded]="openHint() === 'gStacks'"
+            aria-label="Informacja o stakach G"
+            (click)="toggleHint('gStacks', $event)"
+          >
+            i
+          </button>
+        </span>
+        @if (openHint() === 'gStacks') {
+          <span class="tip" role="tooltip" (click)="$event.stopPropagation()">
+            <strong>{{ hints['gStacks'].title }}</strong>
+            {{ hints['gStacks'].text }}
+          </span>
+        }
+        <input
+          type="number"
+          min="1"
+          max="8"
+          [ngModel]="guardsmenStacks()"
+          (ngModelChange)="setNumber(guardsmenStacks, $event)"
+          name="gStacks"
+        />
+      </label>
+
+      <label class="check">
+        <input
+          type="checkbox"
+          [ngModel]="includeSpecialists()"
+          (ngModelChange)="includeSpecialists.set($event)"
+          name="useS"
+        />
+        Specjaliści
+        <button
+          type="button"
+          class="info"
+          [class.is-open]="openHint() === 'useS'"
+          [attr.aria-expanded]="openHint() === 'useS'"
+          aria-label="Informacja o specjalistach"
+          (click)="toggleHint('useS', $event)"
+        >
+          i
+        </button>
+        @if (openHint() === 'useS') {
+          <span class="tip tip-check" role="tooltip" (click)="$event.stopPropagation()">
+            <strong>{{ hints['useS'].title }}</strong>
+            {{ hints['useS'].text }}
+          </span>
+        }
+      </label>
+
+      <label>
+        <span class="label-row">
+          Max S
+          <button
+            type="button"
+            class="info"
+            [class.is-open]="openHint() === 'maxS'"
+            [attr.aria-expanded]="openHint() === 'maxS'"
+            aria-label="Informacja o max S"
+            (click)="toggleHint('maxS', $event)"
+          >
+            i
+          </button>
+        </span>
+        @if (openHint() === 'maxS') {
+          <span class="tip" role="tooltip" (click)="$event.stopPropagation()">
+            <strong>{{ hints['maxS'].title }}</strong>
+            {{ hints['maxS'].text }}
+          </span>
+        }
+        <input
+          type="number"
+          min="3"
+          max="10"
+          [ngModel]="maxSpecialistsTier()"
+          (ngModelChange)="setNumber(maxSpecialistsTier, $event)"
+          name="maxS"
+        />
+      </label>
+
+      <label>
+        <span class="label-row">
+          Staki S
+          <button
+            type="button"
+            class="info"
+            [class.is-open]="openHint() === 'sStacks'"
+            [attr.aria-expanded]="openHint() === 'sStacks'"
+            aria-label="Informacja o stakach S"
+            (click)="toggleHint('sStacks', $event)"
+          >
+            i
+          </button>
+        </span>
+        @if (openHint() === 'sStacks') {
+          <span class="tip" role="tooltip" (click)="$event.stopPropagation()">
+            <strong>{{ hints['sStacks'].title }}</strong>
+            {{ hints['sStacks'].text }}
+          </span>
+        }
+        <input
+          type="number"
+          min="0"
+          max="8"
+          [ngModel]="specialistsStacks()"
+          (ngModelChange)="setNumber(specialistsStacks, $event)"
+          name="sStacks"
+        />
+      </label>
+
+      <label class="check">
+        <input
+          type="checkbox"
+          [ngModel]="includeMonsters()"
+          (ngModelChange)="includeMonsters.set($event)"
+          name="useM"
+        />
+        Potwory
+        <button
+          type="button"
+          class="info"
+          [class.is-open]="openHint() === 'useM'"
+          [attr.aria-expanded]="openHint() === 'useM'"
+          aria-label="Informacja o potworach"
+          (click)="toggleHint('useM', $event)"
+        >
+          i
+        </button>
+        @if (openHint() === 'useM') {
+          <span class="tip tip-check" role="tooltip" (click)="$event.stopPropagation()">
+            <strong>{{ hints['useM'].title }}</strong>
+            {{ hints['useM'].text }}
+          </span>
+        }
+      </label>
+
+      <label>
+        <span class="label-row">
+          Max M
+          <button
+            type="button"
+            class="info"
+            [class.is-open]="openHint() === 'maxM'"
+            [attr.aria-expanded]="openHint() === 'maxM'"
+            aria-label="Informacja o max M"
+            (click)="toggleHint('maxM', $event)"
+          >
+            i
+          </button>
+        </span>
+        @if (openHint() === 'maxM') {
+          <span class="tip" role="tooltip" (click)="$event.stopPropagation()">
+            <strong>{{ hints['maxM'].title }}</strong>
+            {{ hints['maxM'].text }}
+          </span>
+        }
+        <input
+          type="number"
+          min="3"
+          max="10"
+          [ngModel]="maxMonsterTier()"
+          (ngModelChange)="setNumber(maxMonsterTier, $event)"
+          name="maxM"
+        />
+      </label>
+
+      <label>
+        <span class="label-row">
+          Staki M
+          <button
+            type="button"
+            class="info"
+            [class.is-open]="openHint() === 'mStacks'"
+            [attr.aria-expanded]="openHint() === 'mStacks'"
+            aria-label="Informacja o stakach M"
+            (click)="toggleHint('mStacks', $event)"
+          >
+            i
+          </button>
+        </span>
+        @if (openHint() === 'mStacks') {
+          <span class="tip" role="tooltip" (click)="$event.stopPropagation()">
+            <strong>{{ hints['mStacks'].title }}</strong>
+            {{ hints['mStacks'].text }}
+          </span>
+        }
+        <input
+          type="number"
+          min="0"
+          max="8"
+          [ngModel]="monsterStacks()"
+          (ngModelChange)="setNumber(monsterStacks, $event)"
+          name="mStacks"
+        />
+      </label>
+
+      <label>
+        <span class="label-row">
+          Luka HP %
+          <button
+            type="button"
+            class="info"
+            [class.is-open]="openHint() === 'gap'"
+            [attr.aria-expanded]="openHint() === 'gap'"
+            aria-label="Informacja o luce HP"
+            (click)="toggleHint('gap', $event)"
+          >
+            i
+          </button>
+        </span>
+        @if (openHint() === 'gap') {
+          <span class="tip" role="tooltip" (click)="$event.stopPropagation()">
+            <strong>{{ hints['gap'].title }}</strong>
+            {{ hints['gap'].text }}
+          </span>
+        }
+        <input
+          type="number"
+          min="0"
+          max="5"
+          step="0.5"
+          [ngModel]="healthGapPercent()"
+          (ngModelChange)="setNumber(healthGapPercent, $event)"
+          name="gap"
+        />
+      </label>
+    </div>
+  </form>
+</section>

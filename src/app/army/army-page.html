@@ -1,0 +1,370 @@
+<section class="army" (click)="closeHint()">
+  <h1 class="banner">
+    <span class="rule"></span><span class="gem"></span>Kalkulator pojemności armii<span class="gem"></span><span class="rule"></span>
+  </h1>
+
+  <div class="howto">
+    <p>
+      Docelowa <strong>pojemność (Leadership)</strong> z ekranu marszu (liczba po ukośniku).
+      Skład liczony wg gry: włócznicy/łucznicy <strong>1</strong>, jeźdźcy <strong>2</strong>, gryfy <strong>20</strong>.
+      <strong>Gryfy istnieją dopiero od G{{ flyingMinTier }}</strong> (Battle Griffin) — niższe tiery są zablokowane.
+    </p>
+  </div>
+
+  <div class="toolbar panel">
+    <label class="tool">
+      <span class="label-row">
+        Pojemność (Leadership)
+        <button type="button" class="info" [class.is-open]="openHint() === 'cap'" aria-label="Info" (click)="toggleHint('cap', $event)">i</button>
+      </span>
+      @if (openHint() === 'cap') {
+        <span class="tip" (click)="$event.stopPropagation()">
+          <strong>Pojemność (Leadership)</strong>
+          Limit gwardzistów w marszu. Weź maksimum z „Start marszu” po wyborze kapitana (np. 12&nbsp;000 / 58&nbsp;679 → wpisz 58679).
+        </span>
+      }
+      <input
+        type="number"
+        min="0"
+        [ngModel]="targetCapacity()"
+        (ngModelChange)="setNumber(targetCapacity, $event)"
+        name="capacity"
+      />
+    </label>
+
+    <label class="tool">
+      <span class="label-row">
+        Max tier G
+        <button type="button" class="info" [class.is-open]="openHint() === 'tier'" aria-label="Info" (click)="toggleHint('tier', $event)">i</button>
+      </span>
+      @if (openHint() === 'tier') {
+        <span class="tip" (click)="$event.stopPropagation()">
+          <strong>Max tier</strong>
+          Najwyższy odblokowany poziom gwardii. Gryfy wchodzą do składu dopiero gdy max ≥ {{ flyingMinTier }}.
+        </span>
+      }
+      <input
+        type="number"
+        min="1"
+        max="7"
+        [ngModel]="maxTier()"
+        (ngModelChange)="setNumber(maxTier, $event)"
+        name="maxTier"
+      />
+    </label>
+
+    <label class="tool">
+      <span class="label-row">
+        Waga
+        <button type="button" class="info" [class.is-open]="openHint() === 'pyr'" aria-label="Info" (click)="toggleHint('pyr', $event)">i</button>
+      </span>
+      @if (openHint() === 'pyr') {
+        <span class="tip" (click)="$event.stopPropagation()">
+          <strong>Waga (piramida składu)</strong>
+          Mnożnik między sąsiednimi poziomami G: niższy tier dostaje tyle razy więcej pojemności (Leadership) co wyższy.
+          Przykład przy wadze 2: G5 = baza, G4 ≈ 2× G5, G3 ≈ 2× G4 itd. Dzięki temu tanie wojsko ginie pierwsze, drogie bije dłużej.
+          Domyślnie 2 — najczęściej najskuteczniejsza waga w Total Battle. Zakres sensowny: 1,75–2.
+        </span>
+      }
+      <input
+        type="number"
+        min="1.1"
+        max="3"
+        step="0.05"
+        [ngModel]="pyramidRatio()"
+        (ngModelChange)="setNumber(pyramidRatio, $event)"
+        name="weight"
+      />
+    </label>
+
+    <div class="types">
+      <span class="mode-label">Linie w składzie</span>
+      @for (type of types; track type) {
+        <label class="check">
+          <input
+            type="checkbox"
+            [ngModel]="enabled()[type]"
+            (ngModelChange)="setEnabled(type, $event)"
+            [name]="'en-' + type"
+          />
+          {{ typeLabels[type] }}
+          <span class="en-tag">({{ typeLabelsEn[type] }})</span>
+          <span class="lead-tag">L{{ leadership[type] }}</span>
+        </label>
+      }
+    </div>
+  </div>
+
+  <div class="board">
+    <article class="panel block target">
+      <h2>Docelowe ilości wojska</h2>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th></th>
+              @for (type of types; track type) {
+                <th>
+                  <span class="th-pl">{{ typeLabels[type] }}</span>
+                  <span class="th-en">{{ typeLabelsEn[type] }}</span>
+                </th>
+              }
+            </tr>
+          </thead>
+          <tbody>
+            @for (tier of tiers(); track tier) {
+              <tr>
+                <th>G{{ tier }}</th>
+                @for (type of types; track type) {
+                  <td [class.locked]="!available(type, tier)">
+                    @if (available(type, tier)) {
+                      {{ targets()[tier][type] | number: '1.0-0' }}
+                    } @else {
+                      —
+                    }
+                  </td>
+                }
+              </tr>
+            }
+            <tr class="sum">
+              <th>Razem</th>
+              @for (type of types; track type) {
+                <td>{{ targetTotals()[type] | number: '1.0-0' }}</td>
+              }
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="foot">
+        Pojemność (Leadership) składu: <strong>{{ plan().leadershipUsed | number: '1.0-0' }}</strong>
+        / {{ targetCapacity() | number: '1.0-0' }}
+      </p>
+    </article>
+
+    <article class="panel block current">
+      <h2>
+        Aktualny stan
+        <button type="button" class="linkish" (click)="clearCurrent()">Wyczyść</button>
+      </h2>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th></th>
+              @for (type of types; track type) {
+                <th>
+                  <span class="th-pl">{{ typeLabels[type] }}</span>
+                  <span class="th-en">{{ typeLabelsEn[type] }}</span>
+                </th>
+              }
+            </tr>
+          </thead>
+          <tbody>
+            @for (tier of tiers(); track tier) {
+              <tr>
+                <th>G{{ tier }}</th>
+                @for (type of types; track type) {
+                  <td [class.locked]="!available(type, tier)">
+                    @if (available(type, tier)) {
+                      <input
+                        type="number"
+                        min="0"
+                        [ngModel]="current()[tier]?.[type] ?? 0"
+                        (ngModelChange)="setCurrent(tier, type, $event)"
+                        [name]="'cur-' + tier + '-' + type"
+                      />
+                    } @else {
+                      —
+                    }
+                  </td>
+                }
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+      <p class="foot">
+        Pojemność (Leadership) teraz: <strong>{{ currentLeadership() | number: '1.0-0' }}</strong>
+      </p>
+    </article>
+
+    <article class="panel block buy">
+      <h2>Ile dokupić</h2>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th></th>
+              @for (type of types; track type) {
+                <th>
+                  <span class="th-pl">{{ typeLabels[type] }}</span>
+                  <span class="th-en">{{ typeLabelsEn[type] }}</span>
+                </th>
+              }
+            </tr>
+          </thead>
+          <tbody>
+            @for (tier of tiers(); track tier) {
+              <tr>
+                <th>G{{ tier }}</th>
+                @for (type of types; track type) {
+                  <td
+                    [class.locked]="!available(type, tier)"
+                    [class.pos]="available(type, tier) && toBuy()[tier][type] > 0"
+                  >
+                    @if (available(type, tier)) {
+                      {{ toBuy()[tier][type] | number: '1.0-0' }}
+                    } @else {
+                      —
+                    }
+                  </td>
+                }
+              </tr>
+            }
+            <tr class="sum">
+              <th>Razem</th>
+              @for (type of types; track type) {
+                <td [class.pos]="toBuyTotals()[type] > 0">
+                  {{ toBuyTotals()[type] | number: '1.0-0' }}
+                </td>
+              }
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="foot muted">0 - masz już wystarczająco wojska względem celu.</p>
+    </article>
+
+    <article class="panel block current">
+      <h2>
+        Stawki srebra (wiki)
+        <button type="button" class="linkish" (click)="resetRatesToFloor()">Przywróć domyślne</button>
+      </h2>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th></th>
+              @for (type of types; track type) {
+                <th>
+                  <span class="th-pl">{{ typeLabels[type] }}</span>
+                  <span class="th-en">{{ typeLabelsEn[type] }}</span>
+                </th>
+              }
+            </tr>
+          </thead>
+          <tbody>
+            @for (tier of tiers(); track tier) {
+              <tr>
+                <th>G{{ tier }}</th>
+                @for (type of types; track type) {
+                  <td [class.locked]="!available(type, tier)">
+                    @if (available(type, tier)) {
+                      <input
+                        type="number"
+                        min="0"
+                        [ngModel]="rates()[tier]?.[type] ?? 0"
+                        (ngModelChange)="setRate(tier, type, $event)"
+                        [name]="'rate-' + tier + '-' + type"
+                      />
+                    } @else {
+                      —
+                    }
+                  </td>
+                }
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+      <p class="foot muted">
+        Domyślnie: oficjalna podłoga treningu z Total Battle Wiki.
+        U Ciebie może być drożej przy deficycie jedzenia albo taniej po researchu Training Cost — wtedy popraw stawki ręcznie.
+      </p>
+    </article>
+
+    <article class="panel block current">
+      <h2>Wartość armii (aktualny stan)</h2>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th></th>
+              @for (type of types; track type) {
+                <th>
+                  <span class="th-pl">{{ typeLabels[type] }}</span>
+                  <span class="th-en">{{ typeLabelsEn[type] }}</span>
+                </th>
+              }
+            </tr>
+          </thead>
+          <tbody>
+            @for (tier of tiers(); track tier) {
+              <tr>
+                <th>G{{ tier }}</th>
+                @for (type of types; track type) {
+                  <td [class.locked]="!available(type, tier)">
+                    @if (available(type, tier)) {
+                      {{ armyValue().cells[tier][type] | number: '1.0-0' }}
+                    } @else {
+                      —
+                    }
+                  </td>
+                }
+              </tr>
+            }
+            <tr class="sum">
+              <th>Srebro</th>
+              @for (type of types; track type) {
+                <td>{{ armyValue().perType[type] | number: '1.0-0' }}</td>
+              }
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="foot">Razem: <strong>{{ armyValue().total | number: '1.0-0' }}</strong> srebra (aktualny stan × stawki)</p>
+    </article>
+
+    <article class="panel block buy">
+      <h2>Koszt dokupienia</h2>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th></th>
+              @for (type of types; track type) {
+                <th>
+                  <span class="th-pl">{{ typeLabels[type] }}</span>
+                  <span class="th-en">{{ typeLabelsEn[type] }}</span>
+                </th>
+              }
+            </tr>
+          </thead>
+          <tbody>
+            @for (tier of tiers(); track tier) {
+              <tr>
+                <th>G{{ tier }}</th>
+                @for (type of types; track type) {
+                  <td [class.locked]="!available(type, tier)">
+                    @if (available(type, tier)) {
+                      {{ buyCost().cells[tier][type] | number: '1.0-0' }}
+                    } @else {
+                      —
+                    }
+                  </td>
+                }
+              </tr>
+            }
+            <tr class="sum">
+              <th>Srebro</th>
+              @for (type of types; track type) {
+                <td>{{ buyCost().perType[type] | number: '1.0-0' }}</td>
+              }
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="foot">Do wydania: <strong>{{ buyCost().total | number: '1.0-0' }}</strong> srebra</p>
+    </article>
+  </div>
+</section>
