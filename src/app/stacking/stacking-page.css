@@ -92,9 +92,9 @@ label {
 }
 
 .label-row {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
+  display: block;
+  min-width: 0;
+  line-height: 1.25;
 }
 
 label.check {
@@ -113,11 +113,13 @@ label.check {
   place-items: center;
   width: 16px;
   height: 16px;
+  margin-inline-start: 0.3em;
   padding: 0;
   border: 1px solid #c6a56d;
   border-radius: 50%;
   background: #fffdf6;
   color: #8a6230;
+  vertical-align: -0.15em;
   cursor: pointer;
   font: inherit;
   font-size: 0.68rem;
@@ -126,6 +128,7 @@ label.check {
   line-height: 1;
   text-transform: none;
   letter-spacing: 0;
+  white-space: nowrap;
 }
 
 .info.is-open,

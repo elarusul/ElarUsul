@@ -292,9 +292,11 @@
 }
 
 .label-row {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
+  /* Inline flow: ikona „i” zostaje przy ostatnim słowie etykiety,
+     zamiast unosić się obok zawiniętego bloku tekstu. */
+  display: block;
+  min-width: 0;
+  line-height: 1.25;
 }
 
 .tool input,
@@ -404,11 +406,13 @@ table input {
   place-items: center;
   width: 16px;
   height: 16px;
+  margin-inline-start: 0.3em;
   padding: 0;
   border: 1px solid #c4a882;
   border-radius: 50%;
   background: #fffcf5;
   color: #8a6230;
+  vertical-align: -0.15em;
   cursor: pointer;
   font: inherit;
   font-size: 0.68rem;
@@ -417,6 +421,7 @@ table input {
   line-height: 1;
   text-transform: none;
   letter-spacing: 0;
+  white-space: nowrap;
 }
 
 .info.is-open,
