@@ -5,7 +5,7 @@
 
 export type ArmyType = 'melee' | 'ranged' | 'mounted' | 'flying';
 
-export const ARMY_TYPES: ArmyType[] = ['melee', 'ranged', 'mounted', 'flying'];
+export const ARMY_TYPES: ArmyType[] = ['ranged', 'melee', 'mounted', 'flying'];
 
 export const ARMY_TYPE_LABELS: Record<ArmyType, string> = {
   melee: 'Włócznicy',

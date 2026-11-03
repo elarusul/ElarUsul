@@ -1,5 +1,90 @@
 :host {
   display: block;
+  position: relative;
+  isolation: isolate;
   min-height: 100vh;
-  background: #d7c09a;
+  background: #e4cfab;
+}
+
+/* Pergaminowe tło z Alrickiem i Ayrin — cała strona */
+:host::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background-color: #e4cfab;
+  background-image: url('/bg/alrick-ayrin-creation.png');
+  background-repeat: no-repeat;
+  background-position: center top;
+  background-size: cover;
+  opacity: 1;
+}
+
+:host::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background: linear-gradient(
+    180deg,
+    rgba(228, 207, 171, 0.12) 0%,
+    rgba(228, 207, 171, 0.05) 40%,
+    rgba(228, 207, 171, 0.28) 100%
+  );
+}
+
+app-captains,
+app-army {
+  position: relative;
+  z-index: 1;
+}
+
+.lang-bar {
+  position: fixed;
+  right: 14px;
+  bottom: 14px;
+  z-index: 20;
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  padding: 4px 8px;
+  border: 1px solid #c4a882;
+  border-radius: 999px;
+  background: rgba(255, 246, 228, 0.88);
+  box-shadow:
+    0 1px 2px rgba(90, 70, 40, 0.1),
+    0 0 0 1px rgba(168, 148, 120, 0.18);
+  backdrop-filter: blur(4px);
+}
+
+.lang-btn {
+  margin: 0;
+  padding: 2px 7px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: #6d5336;
+  cursor: pointer;
+  font-family: 'Palatino Linotype', Palatino, Georgia, serif;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  line-height: 1.2;
+}
+
+.lang-btn:hover {
+  color: #3c2918;
+}
+
+.lang-btn.is-active {
+  background: #8d5a22;
+  color: #fff8ea;
+}
+
+.lang-sep {
+  color: #b8955c;
+  font-size: 0.7rem;
+  opacity: 0.7;
 }

@@ -13,13 +13,13 @@ describe('App', () => {
     expect(fixture.componentInstance).toBeTruthy();
   });
 
-  it('should render captains above the army calculator', async () => {
+  it('should render the army calculator', async () => {
     const fixture = TestBed.createComponent(App);
     await fixture.whenStable();
     const compiled = fixture.nativeElement as HTMLElement;
     const headings = [...compiled.querySelectorAll('h1')].map((el) => el.textContent ?? '');
-    expect(headings.some((text) => text.includes('Kapitanowie'))).toBe(true);
+    expect(headings.some((text) => text.includes('Bohater i Kapitanowie'))).toBe(false);
     expect(headings.some((text) => text.includes('Kalkulator pojemności armii'))).toBe(true);
-    expect(compiled.querySelectorAll('.grid .card').length).toBe(27);
+    expect(compiled.querySelector('app-captains')).toBeNull();
   });
 });

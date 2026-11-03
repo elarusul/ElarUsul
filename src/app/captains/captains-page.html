@@ -1,106 +1,116 @@
 <header class="top">
   <h1 class="banner">
-    <span class="rule"></span><span class="gem"></span>Kapitanowie<span class="gem"></span><span class="rule"></span>
+    <span class="rule"></span><span class="gem"></span>{{ t()('captains.banner') }}<span class="gem"></span><span class="rule"></span>
   </h1>
-  <div class="grid" role="group" aria-label="Kapitanowie">
-    @for (captain of captains(); track captain.id) {
-      <div
-        class="card"
-        role="button"
-        tabindex="0"
-        draggable="true"
-        [class.is-selected]="isSelected(captain)"
-        [class.is-locked]="starsOf(captain) === 0"
-        [class.is-dragging]="draggingId() === captain.id"
-        [class.is-drop-target]="dropTargetId() === captain.id"
-        [attr.aria-pressed]="isSelected(captain)"
-        (click)="onCardClick(captain)"
-        (keydown.enter)="onCardClick(captain)"
-        (keydown.space)="$event.preventDefault(); onCardClick(captain)"
-        (dragstart)="onDragStart(captain, $event)"
-        (dragover)="onDragOver(captain, $event)"
-        (drop)="onDrop(captain, $event)"
-        (dragend)="onDragEnd()"
-      >
-        <span class="portrait">
-          <img class="face" [src]="captain.image" [alt]="captain.name" draggable="false" />
-          @if (factionIcon(captain); as icon) {
-            <img class="faction" [src]="icon" alt="" aria-hidden="true" draggable="false" />
-          }
 
-          <label
-            class="level-badge"
-            [attr.aria-label]="'Poziom ' + captain.name"
-            (click)="stopCardToggle($event)"
-            (pointerdown)="stopCardToggle($event)"
-          >
-            <img class="shield" [src]="shieldIcon(captain)" alt="" aria-hidden="true" draggable="false" />
-            <input
-              class="level-input"
-              type="number"
-              min="1"
-              max="600"
-              inputmode="numeric"
-              [ngModel]="levelOf(captain)"
-              (ngModelChange)="onLevelChange(captain, $event)"
+  @if (!showCaptainsUi) {
+    <div class="soon panel" role="status" [attr.aria-label]="t()('captains.aria')">
+      <span class="soon-gem" aria-hidden="true"></span>
+      <strong class="soon-title">{{ t()('captains.soon') }}</strong>
+      <p class="soon-hint">{{ t()('captains.soon.hint') }}</p>
+      <span class="soon-gem" aria-hidden="true"></span>
+    </div>
+  } @else {
+    <div class="grid" role="group" [attr.aria-label]="t()('captains.aria')">
+      @for (captain of captains(); track captain.id) {
+        <div
+          class="card"
+          role="button"
+          tabindex="0"
+          draggable="true"
+          [class.is-selected]="isSelected(captain)"
+          [class.is-locked]="starsOf(captain) === 0"
+          [class.is-dragging]="draggingId() === captain.id"
+          [class.is-drop-target]="dropTargetId() === captain.id"
+          [attr.aria-pressed]="isSelected(captain)"
+          (click)="onCardClick(captain)"
+          (keydown.enter)="onCardClick(captain)"
+          (keydown.space)="$event.preventDefault(); onCardClick(captain)"
+          (dragstart)="onDragStart(captain, $event)"
+          (dragover)="onDragOver(captain, $event)"
+          (drop)="onDrop(captain, $event)"
+          (dragend)="onDragEnd()"
+        >
+          <span class="portrait">
+            <img class="face" [src]="captain.image" [alt]="captain.name" draggable="false" />
+            @if (factionIcon(captain); as icon) {
+              <img class="faction" [src]="icon" alt="" aria-hidden="true" draggable="false" />
+            }
+
+            <label
+              class="level-badge"
+              [attr.aria-label]="t()('captains.level') + ' ' + captain.name"
               (click)="stopCardToggle($event)"
               (pointerdown)="stopCardToggle($event)"
-            />
-          </label>
+            >
+              <img class="shield" [src]="shieldIcon(captain)" alt="" aria-hidden="true" draggable="false" />
+              <input
+                class="level-input"
+                type="number"
+                min="1"
+                max="600"
+                inputmode="numeric"
+                [ngModel]="levelOf(captain)"
+                (ngModelChange)="onLevelChange(captain, $event)"
+                (click)="stopCardToggle($event)"
+                (pointerdown)="stopCardToggle($event)"
+              />
+            </label>
 
-          <span
-            class="stars"
-            role="group"
-            [attr.aria-label]="'Gwiazdki: ' + starsOf(captain) + ' z ' + maxStars"
-            (click)="$event.stopPropagation()"
-            (pointerdown)="$event.stopPropagation()"
-          >
-            @for (slot of starSlots; track slot) {
-              <button
-                type="button"
-                class="star"
-                [attr.aria-label]="slot <= starsOf(captain) ? 'Usuń do ' + (slot - 1) : 'Ustaw ' + slot"
-                (click)="onStarClick(captain, slot, $event)"
-                (pointerdown)="$event.stopPropagation()"
-              >
-                <img
-                  [src]="slot <= starsOf(captain) ? starFull : starEmpty"
-                  alt=""
-                  aria-hidden="true"
-                  draggable="false"
-                />
-              </button>
-            }
-          </span>
-        </span>
-        <span class="name">{{ captain.name }}</span>
-        <span class="bonus" [title]="captain.bonus">{{ captain.bonus }}</span>
-      </div>
-    }
-  </div>
-
-  @if (selectedCaptains(); as picked) {
-    @if (picked.length > 0) {
-      <section class="details" aria-label="Właściwości wybranych kapitanów">
-        @for (captain of picked; track captain.id) {
-          <article class="detail-card">
-            <header class="detail-head">
-              <strong>{{ captain.name }}</strong>
-              <span class="rarity">{{ rarityLabel(captain) }}</span>
-            </header>
-            <p class="detail-bonus">{{ captain.bonus }}</p>
-            <ul class="detail-rates">
-              @for (line of bonusLines(captain); track line.label) {
-                <li>
-                  <span>{{ line.label }}</span>
-                  <span class="rate-value">+{{ line.value }}%</span>
-                  <span class="rate-hint">{{ line.hint }}</span>
-                </li>
+            <span
+              class="stars"
+              role="group"
+              [attr.aria-label]="t()('captains.stars') + ': ' + starsOf(captain) + ' ' + t()('captains.stars.of') + ' ' + maxStars"
+              (click)="$event.stopPropagation()"
+              (pointerdown)="$event.stopPropagation()"
+            >
+              @for (slot of starSlots; track slot) {
+                <button
+                  type="button"
+                  class="star"
+                  [attr.aria-label]="'' + (slot <= starsOf(captain) ? slot - 1 : slot)"
+                  (click)="onStarClick(captain, slot, $event)"
+                  (pointerdown)="$event.stopPropagation()"
+                >
+                  <img
+                    [src]="slot <= starsOf(captain) ? starFull : starEmpty"
+                    alt=""
+                    aria-hidden="true"
+                    draggable="false"
+                  />
+                </button>
               }
-            </ul>
-          </article>
-        }
-      </section>
+            </span>
+          </span>
+          <span class="name">{{ captain.name }}</span>
+          <span class="bonus" [title]="captainBonus(captain)">{{ captainBonus(captain) }}</span>
+        </div>
+      }
+    </div>
+
+    @if (selectedCaptains(); as picked) {
+      @if (picked.length > 0) {
+        <section class="details" [attr.aria-label]="t()('captains.details')">
+          @for (captain of picked; track captain.id) {
+            <article class="detail-card">
+              <header class="detail-head">
+                <strong>{{ captain.name }}</strong>
+                <span class="rarity">{{ rarityLabel(captain) }}</span>
+              </header>
+              <p class="detail-bonus">{{ captainBonus(captain) }}</p>
+              <ul class="detail-rates">
+                @for (line of bonusLines(captain); track line.label) {
+                  <li>
+                    <span>{{ line.label }}</span>
+                    <span class="rate-value">+{{ line.value }}%</span>
+                    <span class="rate-hint">{{ line.hint }}</span>
+                  </li>
+                }
+              </ul>
+            </article>
+          }
+        </section>
+      }
     }
   }
 </header>

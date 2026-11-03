@@ -17,7 +17,7 @@ export interface StackPlanInput {
   specialistsStacks: number;
   monsterStacks: number;
   role: TroopRole;
-  /** Extra HP % on earlier-dying stacks so epic hits them first (0.5–2). */
+  /** Extra HP % on earlier-dying stacks so epic hits them first (0.5-2). */
   healthGapPercent: number;
   includeSpecialists: boolean;
   includeMonsters: boolean;
@@ -237,18 +237,18 @@ export function planEpicStacks(input: StackPlanInput): StackPlanResult {
     });
 
   notes.unshift(
-    'Przeciw epikowi wszystkie staki giną — HP nie chroni, tylko ustawia kolejność śmierci.',
+    'Przeciw epikowi wszystkie staki giną - HP nie chroni, tylko ustawia kolejność śmierci.',
   );
   notes.push(
     'Epik zwykle wybiera Twój stak z najwyższym łącznym HP. Silniejsze staki powinny mieć nieco mniej HP i więcej siły.',
   );
   notes.push(
-    'Wpisz swoje limity z ekranu marszu (po wyborze kapitana). Relatywne HP/STR to przybliżenie — dokładne bonusy z raportu bitwy poprawią wynik.',
+    'Wpisz swoje limity z ekranu marszu (po wyborze kapitana). Relatywne HP/STR to przybliżenie - dokładne bonusy z raportu bitwy poprawią wynik.',
   );
 
   if (input.authority > 0) {
     notes.push(
-      `Authority ${input.authority}: najemnicy (np. Epic Monster Hunters) dokładaj na końcu — ich łączne HP powinno być niższe niż najsłabszego staku Leadership, żeby ginęli na końcu.`,
+      `Authority ${input.authority}: najemnicy (np. Epic Monster Hunters) dokładaj na końcu - ich łączne HP powinno być niższe niż najsłabszego staku Leadership, żeby ginęli na końcu.`,
     );
   }
 

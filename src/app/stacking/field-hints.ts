@@ -9,11 +9,11 @@ export const FIELD_HINTS: Record<string, { title: string; text: string }> = {
   },
   authority: {
     title: 'Authority',
-    text: 'Limit najemników. Kalkulator ich nie wylicza automatycznie — zostaw miejsce na końcu (np. Epic Monster Hunters), tak by ich HP było niższe niż najsłabszego staku Leadership.',
+    text: 'Limit najemników. Kalkulator ich nie wylicza automatycznie - zostaw miejsce na końcu (np. Epic Monster Hunters), tak by ich HP było niższe niż najsłabszego staku Leadership.',
   },
   role: {
     title: 'Typ wojska',
-    text: 'Główna klasa jednostek w stakach (wręcz / dystans / kawaleria / latanie). Na epika często bierze się kawalerię lub mieszankę — wybierz to, co masz najmocniej zbonusowane.',
+    text: 'Główna klasa jednostek w stakach (wręcz / dystans / kawaleria / latanie). Na epika często bierze się kawalerię lub mieszankę - wybierz to, co masz najmocniej zbonusowane.',
   },
   maxG: {
     title: 'Max G (gwardia)',
@@ -21,11 +21,11 @@ export const FIELD_HINTS: Record<string, { title: string; text: string }> = {
   },
   gStacks: {
     title: 'Staki G',
-    text: 'Ile osobnych staków gwardii chcesz wysłać. Więcej staków = więcej tur ataku, ale każdy stak jest cieńszy. Typowo 3–5.',
+    text: 'Ile osobnych staków gwardii chcesz wysłać. Więcej staków = więcej tur ataku, ale każdy stak jest cieńszy. Typowo 3-5.',
   },
   useS: {
     title: 'Specjaliści',
-    text: 'Włącza staki specjalistów. Zwykle ustawiamy ich tak, by ginęli przed gwardią — gwardia lepiej dokłada obrażenia do epika.',
+    text: 'Włącza staki specjalistów. Zwykle ustawiamy ich tak, by ginęli przed gwardią - gwardia lepiej dokłada obrażenia do epika.',
   },
   maxS: {
     title: 'Max S',
@@ -33,7 +33,7 @@ export const FIELD_HINTS: Record<string, { title: string; text: string }> = {
   },
   sStacks: {
     title: 'Staki S',
-    text: 'Liczba staków specjalistów. Często 1–2 warstwy ofiarne przed gwardią.',
+    text: 'Liczba staków specjalistów. Często 1-2 warstwy ofiarne przed gwardią.',
   },
   useM: {
     title: 'Potwory',
@@ -49,6 +49,6 @@ export const FIELD_HINTS: Record<string, { title: string; text: string }> = {
   },
   gap: {
     title: 'Luka HP %',
-    text: 'Jak mocno rozsunąć łączne HP staków, żeby epik zabijał je w dobrej kolejności. 0,5–1% to bezpieczny start; za duża luka marnuje Leadership.',
+    text: 'Jak mocno rozsunąć łączne HP staków, żeby epik zabijał je w dobrej kolejności. 0,5-1% to bezpieczny start; za duża luka marnuje Leadership.',
   },
 };

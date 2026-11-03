@@ -1,13 +1,15 @@
-import { Component, computed, effect, signal } from '@angular/core';
+import { Component, computed, effect, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { I18nService } from '../i18n/i18n.service';
 import { CAPTAINS } from './captains.data';
-import { Captain, FACTIONS, RARITY_LABEL } from './captain.model';
+import { Captain, FACTIONS } from './captain.model';
 import { clampLevel, shieldForLevel } from './shields';
 
 const MAX_STARS = 7;
 const STARS_STORAGE_KEY = 'elar-usul.captain-stars';
 const LEVELS_STORAGE_KEY = 'elar-usul.captain-levels';
 const ORDER_STORAGE_KEY = 'elar-usul.captain-order';
+const SELECTED_STORAGE_KEY = 'elar-usul.captain-selected';
 
 const CAPTAIN_BY_ID = new Map(CAPTAINS.map((captain) => [captain.id, captain]));
 
@@ -67,6 +69,31 @@ function saveOrder(order: readonly string[]): void {
   }
 }
 
+function loadSelectedIds(): Set<string> {
+  const known = new Set(CAPTAINS.map((c) => c.id));
+  try {
+    const raw = localStorage.getItem(SELECTED_STORAGE_KEY);
+    if (!raw) return new Set();
+    const parsed = JSON.parse(raw) as unknown;
+    if (!Array.isArray(parsed)) return new Set();
+    return new Set(
+      parsed.filter(
+        (id): id is string => typeof id === 'string' && known.has(id),
+      ),
+    );
+  } catch {
+    return new Set();
+  }
+}
+
+function saveSelectedIds(ids: ReadonlySet<string>): void {
+  try {
+    localStorage.setItem(SELECTED_STORAGE_KEY, JSON.stringify([...ids]));
+  } catch {
+    // Ignore quota / private-mode failures.
+  }
+}
+
 function loadMap(
   key: string,
   defaults: Map<string, number>,
@@ -111,12 +138,18 @@ function saveMap(
   styleUrl: './captains-page.css',
 })
 export class CaptainsPage {
+  protected readonly i18n = inject(I18nService);
+  protected readonly t = this.i18n.t;
+
+  /** UI kapitanów tymczasowo ukryte - logika zostaje. */
+  protected readonly showCaptainsUi = false;
+
   protected readonly maxStars = MAX_STARS;
   protected readonly starSlots = Array.from({ length: MAX_STARS }, (_, i) => i + 1);
   protected readonly starFull = 'stars/full.png';
   protected readonly starEmpty = 'stars/empty.png';
 
-  protected readonly selectedIds = signal<ReadonlySet<string>>(new Set());
+  protected readonly selectedIds = signal<ReadonlySet<string>>(loadSelectedIds());
   protected readonly starCounts = signal<ReadonlyMap<string, number>>(
     loadMap(STARS_STORAGE_KEY, defaultStarCounts(), clampStars),
   );
@@ -139,6 +172,9 @@ export class CaptainsPage {
     effect(() => {
       saveOrder(this.orderIds());
     });
+    effect(() => {
+      saveSelectedIds(this.selectedIds());
+    });
   }
 
   protected readonly captains = computed(() =>
@@ -157,7 +193,11 @@ export class CaptainsPage {
   }
 
   protected rarityLabel(captain: Captain): string {
-    return RARITY_LABEL[captain.rarity];
+    return this.t()(`rarity.${captain.rarity}`);
+  }
+
+  protected captainBonus(captain: Captain): string {
+    return this.t()(`captain.${captain.id}.bonus`, captain.bonus);
   }
 
   protected bonusLines(captain: Captain): readonly {
@@ -166,15 +206,26 @@ export class CaptainsPage {
     hint: string;
   }[] {
     const level = this.levelOf(captain);
-    return captain.levelBonuses.map((rate) => {
+    const t = this.t();
+    return captain.levelBonuses.map((rate, index) => {
       const effective = rate.levelCap ? Math.min(level, rate.levelCap) : level;
       const raw = effective * rate.perLevel;
       const value = Number.isInteger(raw) ? String(raw) : raw.toFixed(1);
       const hint =
         rate.levelCap && level > rate.levelCap
-          ? `(${rate.perLevel}% × poz. do ${rate.levelCap})`
-          : `(${rate.perLevel}% × poz. ${effective})`;
-      return { label: rate.label, value, hint };
+          ? t('captains.rate.hintCap', undefined, {
+              per: rate.perLevel,
+              cap: rate.levelCap,
+            })
+          : t('captains.rate.hint', undefined, {
+              per: rate.perLevel,
+              level: effective,
+            });
+      return {
+        label: t(`captain.${captain.id}.r${index}`, rate.label),
+        value,
+        hint,
+      };
     });
   }
 

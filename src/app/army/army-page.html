@@ -1,26 +1,24 @@
 <section class="army" (click)="closeHint()">
   <h1 class="banner">
-    <span class="rule"></span><span class="gem"></span>Kalkulator pojemności armii<span class="gem"></span><span class="rule"></span>
+    <span class="rule"></span><span class="gem"></span>{{ t()('army.banner') }}<span class="gem"></span><span class="rule"></span>
   </h1>
 
   <div class="howto">
-    <p>
-      Docelowa <strong>pojemność (Leadership)</strong> z ekranu marszu (liczba po ukośniku).
-      Skład liczony wg gry: włócznicy/łucznicy <strong>1</strong>, jeźdźcy <strong>2</strong>, gryfy <strong>20</strong>.
-      <strong>Gryfy istnieją dopiero od G{{ flyingMinTier }}</strong> (Battle Griffin) — niższe tiery są zablokowane.
-    </p>
+    <p [innerHTML]="t()('army.howto', undefined, { tier: flyingMinTier })"></p>
   </div>
 
+  <div class="setup-row">
   <div class="toolbar panel">
-    <label class="tool">
+    <div class="tools-row">
+    <label class="tool tool-wide">
       <span class="label-row">
-        Pojemność (Leadership)
-        <button type="button" class="info" [class.is-open]="openHint() === 'cap'" aria-label="Info" (click)="toggleHint('cap', $event)">i</button>
+        {{ t()('army.cap') }}
+        <button type="button" class="info" [class.is-open]="openHint() === 'cap'" [attr.aria-label]="t()('army.info')" (click)="toggleHint('cap', $event)">i</button>
       </span>
       @if (openHint() === 'cap') {
         <span class="tip" (click)="$event.stopPropagation()">
-          <strong>Pojemność (Leadership)</strong>
-          Limit gwardzistów w marszu. Weź maksimum z „Start marszu” po wyborze kapitana (np. 12&nbsp;000 / 58&nbsp;679 → wpisz 58679).
+          <strong>{{ t()('army.cap.tipTitle') }}</strong>
+          {{ t()('army.cap.tip') }}
         </span>
       }
       <input
@@ -32,15 +30,35 @@
       />
     </label>
 
-    <label class="tool">
+    <label class="tool tool-wide">
       <span class="label-row">
-        Max tier G
-        <button type="button" class="info" [class.is-open]="openHint() === 'tier'" aria-label="Info" (click)="toggleHint('tier', $event)">i</button>
+        {{ t()('army.dominance') }}
+        <button type="button" class="info" [class.is-open]="openHint() === 'dom'" [attr.aria-label]="t()('army.info')" (click)="toggleHint('dom', $event)">i</button>
+      </span>
+      @if (openHint() === 'dom') {
+        <span class="tip" (click)="$event.stopPropagation()">
+          <strong>{{ t()('army.dominance.tipTitle') }}</strong>
+          {{ t()('army.dominance.tip') }}
+        </span>
+      }
+      <input
+        type="number"
+        min="0"
+        [ngModel]="dominance()"
+        (ngModelChange)="setNumber(dominance, $event)"
+        name="dominance"
+      />
+    </label>
+
+    <label class="tool tool-tier">
+      <span class="label-row">
+        {{ t()('army.tier') }}
+        <button type="button" class="info" [class.is-open]="openHint() === 'tier'" [attr.aria-label]="t()('army.info')" (click)="toggleHint('tier', $event)">i</button>
       </span>
       @if (openHint() === 'tier') {
         <span class="tip" (click)="$event.stopPropagation()">
-          <strong>Max tier</strong>
-          Najwyższy odblokowany poziom gwardii. Gryfy wchodzą do składu dopiero gdy max ≥ {{ flyingMinTier }}.
+          <strong>{{ t()('army.tier.tipTitle') }}</strong>
+          {{ t()('army.tier.tip', undefined, { tier: flyingMinTier }) }}
         </span>
       }
       <input
@@ -53,17 +71,57 @@
       />
     </label>
 
-    <label class="tool">
+    <label class="tool tool-tier">
       <span class="label-row">
-        Waga
-        <button type="button" class="info" [class.is-open]="openHint() === 'pyr'" aria-label="Info" (click)="toggleHint('pyr', $event)">i</button>
+        {{ t()('army.tierS') }}
+        <button type="button" class="info" [class.is-open]="openHint() === 'tierS'" [attr.aria-label]="t()('army.info')" (click)="toggleHint('tierS', $event)">i</button>
+      </span>
+      @if (openHint() === 'tierS') {
+        <span class="tip" (click)="$event.stopPropagation()">
+          <strong>{{ t()('army.tierS.tipTitle') }}</strong>
+          {{ t()('army.tierS.tip') }}
+        </span>
+      }
+      <input
+        type="number"
+        min="1"
+        max="9"
+        [ngModel]="maxTierS()"
+        (ngModelChange)="setNumber(maxTierS, $event)"
+        name="maxTierS"
+      />
+    </label>
+
+    <label class="tool tool-tier">
+      <span class="label-row">
+        {{ t()('army.tierM') }}
+        <button type="button" class="info" [class.is-open]="openHint() === 'tierM'" [attr.aria-label]="t()('army.info')" (click)="toggleHint('tierM', $event)">i</button>
+      </span>
+      @if (openHint() === 'tierM') {
+        <span class="tip" (click)="$event.stopPropagation()">
+          <strong>{{ t()('army.tierM.tipTitle') }}</strong>
+          {{ t()('army.tierM.tip') }}
+        </span>
+      }
+      <input
+        type="number"
+        min="3"
+        max="9"
+        [ngModel]="maxTierM()"
+        (ngModelChange)="setNumber(maxTierM, $event)"
+        name="maxTierM"
+      />
+    </label>
+
+    <label class="tool tool-tier">
+      <span class="label-row">
+        {{ t()('army.weight') }}
+        <button type="button" class="info" [class.is-open]="openHint() === 'pyr'" [attr.aria-label]="t()('army.info')" (click)="toggleHint('pyr', $event)">i</button>
       </span>
       @if (openHint() === 'pyr') {
         <span class="tip" (click)="$event.stopPropagation()">
-          <strong>Waga (piramida składu)</strong>
-          Mnożnik między sąsiednimi poziomami G: niższy tier dostaje tyle razy więcej pojemności (Leadership) co wyższy.
-          Przykład przy wadze 2: G5 = baza, G4 ≈ 2× G5, G3 ≈ 2× G4 itd. Dzięki temu tanie wojsko ginie pierwsze, drogie bije dłużej.
-          Domyślnie 2 — najczęściej najskuteczniejsza waga w Total Battle. Zakres sensowny: 1,75–2.
+          <strong>{{ t()('army.weight.tipTitle') }}</strong>
+          {{ t()('army.weight.tip') }}
         </span>
       }
       <input
@@ -76,9 +134,10 @@
         name="weight"
       />
     </label>
+    </div>
 
     <div class="types">
-      <span class="mode-label">Linie w składzie</span>
+      <span class="mode-label">{{ t()('army.lines') }}</span>
       @for (type of types; track type) {
         <label class="check">
           <input
@@ -87,17 +146,153 @@
             (ngModelChange)="setEnabled(type, $event)"
             [name]="'en-' + type"
           />
-          {{ typeLabels[type] }}
-          <span class="en-tag">({{ typeLabelsEn[type] }})</span>
+          {{ typeLabel(type) }}
+          @if (i18n.lang() === 'pl') {
+            <span class="en-tag">({{ typeLabelEn(type) }})</span>
+          }
           <span class="lead-tag">L{{ leadership[type] }}</span>
         </label>
       }
     </div>
+
+    <div class="types">
+      <span class="mode-label">{{ t()('army.monsterLines') }}</span>
+      @for (race of monsterRaces; track race) {
+        <label class="check">
+          <input
+            type="checkbox"
+            [ngModel]="monstersEnabled()[race]"
+            (ngModelChange)="setMonsterEnabled(race, $event)"
+            [name]="'mon-' + race"
+          />
+          {{ raceLabel(race) }}
+          @if (i18n.lang() === 'pl') {
+            <span class="en-tag">({{ raceLabelEn(race) }})</span>
+          }
+        </label>
+      }
+      <span class="check tip-host">
+        <label class="check">
+          <input
+            type="checkbox"
+            [ngModel]="roundMonstersToTens()"
+            (ngModelChange)="roundMonstersToTens.set($event)"
+            name="roundTens"
+          />
+          {{ t()('army.roundTens') }}
+        </label>
+        <button
+          type="button"
+          class="info"
+          [class.is-open]="openHint() === 'roundTens'"
+          [attr.aria-label]="t()('army.info')"
+          (click)="toggleHint('roundTens', $event)"
+        >
+          i
+        </button>
+        @if (openHint() === 'roundTens') {
+          <span class="tip" (click)="$event.stopPropagation()">
+            <strong>{{ t()('army.roundTens.tipTitle') }}</strong>
+            {{ t()('army.roundTens.tip') }}
+          </span>
+        }
+      </span>
+    </div>
+  </div>
+
+  <article class="panel scan-panel" (click)="$event.stopPropagation()">
+    <h2>{{ t()('army.scan') }}</h2>
+    <p class="scan-hint" [innerHTML]="t()('army.scan.hint')"></p>
+
+    <label
+      class="scan-drop"
+      [class.is-drag]="scanDragOver()"
+      [class.is-busy]="scanBusy()"
+      (dragover)="onScanDragOver($event)"
+      (dragleave)="onScanDragLeave($event)"
+      (drop)="onScanDrop($event)"
+    >
+      <input
+        type="file"
+        accept="image/png,image/jpeg,image/webp,image/*"
+        multiple
+        (change)="onScanPick($event)"
+        [disabled]="scanBusy()"
+      />
+      <span class="scan-drop-title">{{ t()('army.scan.drop') }}</span>
+      <span class="scan-drop-sub">{{ t()('army.scan.formats') }}</span>
+    </label>
+
+    @if (scanItems().length) {
+      <ul class="scan-list">
+        @for (item of scanItems(); track item.id) {
+          <li class="scan-item" [attr.data-status]="item.status">
+            <img class="scan-thumb" [src]="item.previewUrl" [alt]="item.fileName" />
+            <div class="scan-meta">
+              <strong class="scan-name">{{ item.fileName }}</strong>
+              @if (item.status === 'scanning' || item.status === 'pending') {
+                <span class="scan-status">{{ t()('army.scan.scanning') }}</span>
+              } @else if (item.status === 'error') {
+                <span class="scan-status error">{{ item.error || t()('army.scan.error') }}</span>
+              } @else if (item.hits.length) {
+                <span class="scan-status ok">{{ t()('army.scan.found', undefined, { count: item.hits.length }) }}</span>
+                <ul class="scan-hits">
+                  @for (hit of item.hits; track hit.label + hit.count) {
+                    <li>{{ hit.label }} → {{ hit.count | number: '1.0-0' }}</li>
+                  }
+                </ul>
+              } @else {
+                <span class="scan-status">{{ t()('army.scan.none') }}</span>
+              }
+            </div>
+            <button
+              type="button"
+              class="linkish scan-remove"
+              [disabled]="scanBusy()"
+              (click)="removeScanItem(item.id)"
+            >
+              {{ t()('army.scan.remove') }}
+            </button>
+          </li>
+        }
+      </ul>
+
+      @if (scanHits().length) {
+        <div class="scan-summary">
+          <span>{{ t()('army.scan.found', undefined, { count: scanHits().length }) }}</span>
+          <ul class="scan-hits">
+            @for (hit of scanHits(); track hit.kind + (hit.type || hit.race) + hit.tier) {
+              <li>{{ hit.label }} → {{ hit.count | number: '1.0-0' }}</li>
+            }
+          </ul>
+        </div>
+      }
+
+      <div class="scan-actions">
+        <button
+          type="button"
+          class="scan-apply"
+          [disabled]="scanBusy() || !scanHits().length"
+          (click)="applyScanHits()"
+        >
+          {{ t()('army.scan.apply') }}
+        </button>
+        <button type="button" class="linkish" [disabled]="scanBusy()" (click)="clearScanItems()">
+          {{ t()('army.scan.clear') }}
+        </button>
+      </div>
+    }
+
+    @if (scanMessage()) {
+      <p class="scan-message">{{ scanMessage() }}</p>
+    }
+  </article>
   </div>
 
   <div class="board">
+    <div class="board-row">
     <article class="panel block target">
-      <h2>Docelowe ilości wojska</h2>
+      <h2>{{ t()('army.target') }}</h2>
       <div class="table-wrap">
         <table>
           <thead>
@@ -105,8 +300,10 @@
               <th></th>
               @for (type of types; track type) {
                 <th>
-                  <span class="th-pl">{{ typeLabels[type] }}</span>
-                  <span class="th-en">{{ typeLabelsEn[type] }}</span>
+                  <span class="th-pl">{{ typeLabel(type) }}</span>
+                  @if (i18n.lang() === 'pl') {
+                    <span class="th-en">{{ typeLabelEn(type) }}</span>
+                  }
                 </th>
               }
             </tr>
@@ -118,33 +315,30 @@
                 @for (type of types; track type) {
                   <td [class.locked]="!available(type, tier)">
                     @if (available(type, tier)) {
-                      {{ targets()[tier][type] | number: '1.0-0' }}
+                      <span class="cell-with-icon">
+                        <img class="troop-icon sm" [src]="guardsTierIcon(type, tier)" [alt]="typeLabel(type)" width="26" height="26" />
+                        <span>{{ targets()[tier][type] | number: '1.0-0' }}</span>
+                      </span>
                     } @else {
-                      —
+                      -
                     }
                   </td>
                 }
               </tr>
             }
-            <tr class="sum">
-              <th>Razem</th>
-              @for (type of types; track type) {
-                <td>{{ targetTotals()[type] | number: '1.0-0' }}</td>
-              }
-            </tr>
           </tbody>
         </table>
       </div>
       <p class="foot">
-        Pojemność (Leadership) składu: <strong>{{ plan().leadershipUsed | number: '1.0-0' }}</strong>
+        {{ t()('army.capUsed') }} <strong>{{ plan().leadershipUsed | number: '1.0-0' }}</strong>
         / {{ targetCapacity() | number: '1.0-0' }}
       </p>
     </article>
 
     <article class="panel block current">
       <h2>
-        Aktualny stan
-        <button type="button" class="linkish" (click)="clearCurrent()">Wyczyść</button>
+        {{ t()('army.current') }}
+        <button type="button" class="linkish" (click)="clearCurrent()">{{ t()('army.clear') }}</button>
       </h2>
       <div class="table-wrap">
         <table>
@@ -153,8 +347,10 @@
               <th></th>
               @for (type of types; track type) {
                 <th>
-                  <span class="th-pl">{{ typeLabels[type] }}</span>
-                  <span class="th-en">{{ typeLabelsEn[type] }}</span>
+                  <span class="th-pl">{{ typeLabel(type) }}</span>
+                  @if (i18n.lang() === 'pl') {
+                    <span class="th-en">{{ typeLabelEn(type) }}</span>
+                  }
                 </th>
               }
             </tr>
@@ -166,15 +362,20 @@
                 @for (type of types; track type) {
                   <td [class.locked]="!available(type, tier)">
                     @if (available(type, tier)) {
-                      <input
-                        type="number"
-                        min="0"
-                        [ngModel]="current()[tier]?.[type] ?? 0"
-                        (ngModelChange)="setCurrent(tier, type, $event)"
-                        [name]="'cur-' + tier + '-' + type"
-                      />
+                      <span class="cell-with-icon">
+                        <img class="troop-icon sm" [src]="guardsTierIcon(type, tier)" [alt]="typeLabel(type)" width="26" height="26" />
+                        <input
+                          type="number"
+                          min="0"
+                          [ngModel]="current()[tier]?.[type] ?? 0"
+                          (ngModelChange)="setCurrent(tier, type, $event)"
+                          (focus)="selectOnFocus($event)"
+                          (input)="stripLeadingZeros($event)"
+                          [name]="'cur-' + tier + '-' + type"
+                        />
+                      </span>
                     } @else {
-                      —
+                      -
                     }
                   </td>
                 }
@@ -184,12 +385,12 @@
         </table>
       </div>
       <p class="foot">
-        Pojemność (Leadership) teraz: <strong>{{ currentLeadership() | number: '1.0-0' }}</strong>
+        {{ t()('army.capNow') }} <strong>{{ currentLeadership() | number: '1.0-0' }}</strong>
       </p>
     </article>
 
     <article class="panel block buy">
-      <h2>Ile dokupić</h2>
+      <h2>{{ t()('army.buy') }}</h2>
       <div class="table-wrap">
         <table>
           <thead>
@@ -197,8 +398,10 @@
               <th></th>
               @for (type of types; track type) {
                 <th>
-                  <span class="th-pl">{{ typeLabels[type] }}</span>
-                  <span class="th-en">{{ typeLabelsEn[type] }}</span>
+                  <span class="th-pl">{{ typeLabel(type) }}</span>
+                  @if (i18n.lang() === 'pl') {
+                    <span class="th-en">{{ typeLabelEn(type) }}</span>
+                  }
                 </th>
               }
             </tr>
@@ -213,62 +416,111 @@
                     [class.pos]="available(type, tier) && toBuy()[tier][type] > 0"
                   >
                     @if (available(type, tier)) {
-                      {{ toBuy()[tier][type] | number: '1.0-0' }}
+                      <span class="cell-with-icon">
+                        <img class="troop-icon sm" [src]="guardsTierIcon(type, tier)" [alt]="typeLabel(type)" width="26" height="26" />
+                        <span>{{ toBuy()[tier][type] | number: '1.0-0' }}</span>
+                      </span>
                     } @else {
-                      —
+                      -
                     }
                   </td>
                 }
               </tr>
             }
-            <tr class="sum">
-              <th>Razem</th>
-              @for (type of types; track type) {
-                <td [class.pos]="toBuyTotals()[type] > 0">
-                  {{ toBuyTotals()[type] | number: '1.0-0' }}
-                </td>
-              }
-            </tr>
           </tbody>
         </table>
       </div>
-      <p class="foot muted">0 - masz już wystarczająco wojska względem celu.</p>
+      <p class="foot muted">{{ t()('army.buyHint') }}</p>
+    </article>
+    </div>
+
+    <div class="board-row">
+    <article class="panel block target">
+      <h2>{{ t()('army.monsterTarget') }}</h2>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th></th>
+              @for (race of monsterRaces; track race) {
+                <th>
+                  <span class="th-pl">{{ raceLabel(race) }}</span>
+                  @if (i18n.lang() === 'pl') {
+                    <span class="th-en">{{ raceLabelEn(race) }}</span>
+                  }
+                </th>
+              }
+            </tr>
+          </thead>
+          <tbody>
+            @for (tier of monsterTiers(); track tier) {
+              <tr>
+                <th>M{{ tier }}</th>
+                @for (race of monsterRaces; track race) {
+                  <td [class.locked]="!raceEnabled(race)">
+                    @if (raceEnabled(race)) {
+                      <span class="cell-with-icon">
+                        <img class="troop-icon sm" [src]="monsterTierIcon(race, tier)" [alt]="monsterName(tier, race)" width="26" height="26" />
+                        <span>{{ monsterTargets()[tier][race] | number: '1.0-0' }}</span>
+                      </span>
+                      <small class="cell-meta">{{ monsterName(tier, race) }}</small>
+                    } @else {
+                      -
+                    }
+                  </td>
+                }
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+      <p class="foot">
+        {{ t()('army.domUsed') }} <strong>{{ monsterPlan().dominanceUsed | number: '1.0-0' }}</strong>
+        / {{ dominance() | number: '1.0-0' }}
+      </p>
     </article>
 
     <article class="panel block current">
       <h2>
-        Stawki srebra (wiki)
-        <button type="button" class="linkish" (click)="resetRatesToFloor()">Przywróć domyślne</button>
+        {{ t()('army.monsterCurrent') }}
+        <button type="button" class="linkish" (click)="clearCurrentMonsters()">{{ t()('army.clear') }}</button>
       </h2>
       <div class="table-wrap">
         <table>
           <thead>
             <tr>
               <th></th>
-              @for (type of types; track type) {
+              @for (race of monsterRaces; track race) {
                 <th>
-                  <span class="th-pl">{{ typeLabels[type] }}</span>
-                  <span class="th-en">{{ typeLabelsEn[type] }}</span>
+                  <span class="th-pl">{{ raceLabel(race) }}</span>
+                  @if (i18n.lang() === 'pl') {
+                    <span class="th-en">{{ raceLabelEn(race) }}</span>
+                  }
                 </th>
               }
             </tr>
           </thead>
           <tbody>
-            @for (tier of tiers(); track tier) {
+            @for (tier of monsterTiers(); track tier) {
               <tr>
-                <th>G{{ tier }}</th>
-                @for (type of types; track type) {
-                  <td [class.locked]="!available(type, tier)">
-                    @if (available(type, tier)) {
-                      <input
-                        type="number"
-                        min="0"
-                        [ngModel]="rates()[tier]?.[type] ?? 0"
-                        (ngModelChange)="setRate(tier, type, $event)"
-                        [name]="'rate-' + tier + '-' + type"
-                      />
+                <th>M{{ tier }}</th>
+                @for (race of monsterRaces; track race) {
+                  <td [class.locked]="!raceEnabled(race)">
+                    @if (raceEnabled(race)) {
+                      <span class="cell-with-icon">
+                        <img class="troop-icon sm" [src]="monsterTierIcon(race, tier)" [alt]="monsterName(tier, race)" width="26" height="26" />
+                        <input
+                          type="number"
+                          min="0"
+                          [ngModel]="currentMonsters()[tier]?.[race] ?? 0"
+                          (ngModelChange)="setCurrentMonster(tier, race, $event)"
+                          (focus)="selectOnFocus($event)"
+                          (input)="stripLeadingZeros($event)"
+                          [name]="'mcur-' + tier + '-' + race"
+                        />
+                      </span>
                     } @else {
-                      —
+                      -
                     }
                   </td>
                 }
@@ -277,94 +529,464 @@
           </tbody>
         </table>
       </div>
-      <p class="foot muted">
-        Domyślnie: oficjalna podłoga treningu z Total Battle Wiki.
-        U Ciebie może być drożej przy deficycie jedzenia albo taniej po researchu Training Cost — wtedy popraw stawki ręcznie.
+      <p class="foot">
+        {{ t()('army.domNow') }} <strong>{{ currentDominance() | number: '1.0-0' }}</strong>
       </p>
     </article>
 
-    <article class="panel block current">
-      <h2>Wartość armii (aktualny stan)</h2>
-      <div class="table-wrap">
-        <table>
-          <thead>
-            <tr>
-              <th></th>
-              @for (type of types; track type) {
-                <th>
-                  <span class="th-pl">{{ typeLabels[type] }}</span>
-                  <span class="th-en">{{ typeLabelsEn[type] }}</span>
-                </th>
-              }
-            </tr>
-          </thead>
-          <tbody>
-            @for (tier of tiers(); track tier) {
-              <tr>
-                <th>G{{ tier }}</th>
-                @for (type of types; track type) {
-                  <td [class.locked]="!available(type, tier)">
-                    @if (available(type, tier)) {
-                      {{ armyValue().cells[tier][type] | number: '1.0-0' }}
-                    } @else {
-                      —
-                    }
-                  </td>
-                }
-              </tr>
-            }
-            <tr class="sum">
-              <th>Srebro</th>
-              @for (type of types; track type) {
-                <td>{{ armyValue().perType[type] | number: '1.0-0' }}</td>
-              }
-            </tr>
-          </tbody>
-        </table>
-      </div>
-      <p class="foot">Razem: <strong>{{ armyValue().total | number: '1.0-0' }}</strong> srebra (aktualny stan × stawki)</p>
-    </article>
-
     <article class="panel block buy">
-      <h2>Koszt dokupienia</h2>
+      <h2>{{ t()('army.monsterBuy') }}</h2>
       <div class="table-wrap">
         <table>
           <thead>
             <tr>
               <th></th>
-              @for (type of types; track type) {
+              @for (race of monsterRaces; track race) {
                 <th>
-                  <span class="th-pl">{{ typeLabels[type] }}</span>
-                  <span class="th-en">{{ typeLabelsEn[type] }}</span>
+                  <span class="th-pl">{{ raceLabel(race) }}</span>
+                  @if (i18n.lang() === 'pl') {
+                    <span class="th-en">{{ raceLabelEn(race) }}</span>
+                  }
                 </th>
               }
             </tr>
           </thead>
           <tbody>
-            @for (tier of tiers(); track tier) {
+            @for (tier of monsterTiers(); track tier) {
               <tr>
-                <th>G{{ tier }}</th>
-                @for (type of types; track type) {
-                  <td [class.locked]="!available(type, tier)">
-                    @if (available(type, tier)) {
-                      {{ buyCost().cells[tier][type] | number: '1.0-0' }}
+                <th>M{{ tier }}</th>
+                @for (race of monsterRaces; track race) {
+                  <td
+                    [class.locked]="!raceEnabled(race)"
+                    [class.pos]="raceEnabled(race) && monstersToBuy()[tier][race] > 0"
+                  >
+                    @if (raceEnabled(race)) {
+                      <span class="cell-with-icon">
+                        <img class="troop-icon sm" [src]="monsterTierIcon(race, tier)" [alt]="monsterName(tier, race)" width="26" height="26" />
+                        <span>{{ monstersToBuy()[tier][race] | number: '1.0-0' }}</span>
+                      </span>
                     } @else {
-                      —
+                      -
                     }
                   </td>
                 }
               </tr>
             }
-            <tr class="sum">
-              <th>Srebro</th>
-              @for (type of types; track type) {
-                <td>{{ buyCost().perType[type] | number: '1.0-0' }}</td>
-              }
-            </tr>
           </tbody>
         </table>
       </div>
-      <p class="foot">Do wydania: <strong>{{ buyCost().total | number: '1.0-0' }}</strong> srebra</p>
+      <p class="foot muted">{{ t()('army.monsterBuyHint') }}</p>
     </article>
+    </div>
+  </div>
+
+  <div class="silver-fold panel">
+    <button
+      type="button"
+      class="fold-toggle"
+      [attr.aria-expanded]="showSilver()"
+      (click)="showSilver.set(!showSilver())"
+    >
+      <span class="fold-label">{{ t()('army.silverFold') }}</span>
+      <span class="fold-hint">{{ showSilver() ? t()('army.silverFold.hide') : t()('army.silverFold.show') }}</span>
+      <span class="fold-chev" aria-hidden="true">{{ showSilver() ? '▾' : '▸' }}</span>
+    </button>
+
+    @if (showSilver()) {
+      <div class="board silver-board">
+        <article class="panel block current">
+          <h2>
+            {{ t()('army.rates') }}
+            <button type="button" class="linkish" (click)="resetRatesToFloor()">{{ t()('army.ratesReset') }}</button>
+          </h2>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th></th>
+                  @for (type of types; track type) {
+                    <th>
+                      <span class="th-pl">{{ typeLabel(type) }}</span>
+                      @if (i18n.lang() === 'pl') {
+                        <span class="th-en">{{ typeLabelEn(type) }}</span>
+                      }
+                    </th>
+                  }
+                </tr>
+              </thead>
+              <tbody>
+                @for (tier of tiers(); track tier) {
+                  <tr>
+                    <th>G{{ tier }}</th>
+                    @for (type of types; track type) {
+                      <td [class.locked]="!available(type, tier)">
+                        @if (available(type, tier)) {
+                          <input
+                            type="number"
+                            min="0"
+                            [ngModel]="rates()[tier]?.[type] ?? 0"
+                            (ngModelChange)="setRate(tier, type, $event)"
+                            [name]="'rate-' + tier + '-' + type"
+                          />
+                        } @else {
+                          -
+                        }
+                      </td>
+                    }
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+          <p class="foot muted">{{ t()('army.ratesHint') }}</p>
+        </article>
+
+        <article class="panel block current">
+          <h2>{{ t()('army.value') }}</h2>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th></th>
+                  @for (type of types; track type) {
+                    <th>
+                      <span class="th-pl">{{ typeLabel(type) }}</span>
+                      @if (i18n.lang() === 'pl') {
+                        <span class="th-en">{{ typeLabelEn(type) }}</span>
+                      }
+                    </th>
+                  }
+                </tr>
+              </thead>
+              <tbody>
+                @for (tier of tiers(); track tier) {
+                  <tr>
+                    <th>G{{ tier }}</th>
+                    @for (type of types; track type) {
+                      <td [class.locked]="!available(type, tier)">
+                        @if (available(type, tier)) {
+                          {{ armyValue().cells[tier][type] | number: '1.0-0' }}
+                        } @else {
+                          -
+                        }
+                      </td>
+                    }
+                  </tr>
+                }
+                <tr class="sum">
+                  <th>{{ t()('army.silver') }}</th>
+                  @for (type of types; track type) {
+                    <td>{{ armyValue().perType[type] | number: '1.0-0' }}</td>
+                  }
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <p class="foot" [innerHTML]="valueFootHtml()"></p>
+        </article>
+
+        <article class="panel block buy">
+          <h2>{{ t()('army.buyCost') }}</h2>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th></th>
+                  @for (type of types; track type) {
+                    <th>
+                      <span class="th-pl">{{ typeLabel(type) }}</span>
+                      @if (i18n.lang() === 'pl') {
+                        <span class="th-en">{{ typeLabelEn(type) }}</span>
+                      }
+                    </th>
+                  }
+                </tr>
+              </thead>
+              <tbody>
+                @for (tier of tiers(); track tier) {
+                  <tr>
+                    <th>G{{ tier }}</th>
+                    @for (type of types; track type) {
+                      <td [class.locked]="!available(type, tier)">
+                        @if (available(type, tier)) {
+                          {{ buyCost().cells[tier][type] | number: '1.0-0' }}
+                        } @else {
+                          -
+                        }
+                      </td>
+                    }
+                  </tr>
+                }
+                <tr class="sum">
+                  <th>{{ t()('army.silver') }}</th>
+                  @for (type of types; track type) {
+                    <td>{{ buyCost().perType[type] | number: '1.0-0' }}</td>
+                  }
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <p class="foot" [innerHTML]="buyCostFootHtml()"></p>
+        </article>
+
+        <article class="panel block current">
+          <h2>
+            {{ t()('army.monsterRates') }}
+            <button type="button" class="linkish" (click)="resetMonsterRatesToFloor()">{{ t()('army.ratesReset') }}</button>
+          </h2>
+          <p class="foot muted">{{ t()('army.monsterRatesHint') }}</p>
+          <h3 class="subhead">{{ t()('army.silver') }}</h3>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th></th>
+                  @for (race of monsterRaces; track race) {
+                    <th>
+                      <span class="th-pl">{{ raceLabel(race) }}</span>
+                      @if (i18n.lang() === 'pl') {
+                        <span class="th-en">{{ raceLabelEn(race) }}</span>
+                      }
+                    </th>
+                  }
+                </tr>
+              </thead>
+              <tbody>
+                @for (tier of monsterTiers(); track tier) {
+                  <tr>
+                    <th>M{{ tier }}</th>
+                    @for (race of monsterRaces; track race) {
+                      <td [class.locked]="!raceEnabled(race)">
+                        @if (raceEnabled(race)) {
+                          <input
+                            type="number"
+                            min="0"
+                            [ngModel]="monsterSilverRates()[tier]?.[race] ?? 0"
+                            (ngModelChange)="setMonsterSilverRate(tier, race, $event)"
+                            [name]="'msrate-' + tier + '-' + race"
+                          />
+                        } @else {
+                          -
+                        }
+                      </td>
+                    }
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+          <h3 class="subhead">{{ t()('army.dragonCoins') }}</h3>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th></th>
+                  @for (race of monsterRaces; track race) {
+                    <th>
+                      <span class="th-pl">{{ raceLabel(race) }}</span>
+                      @if (i18n.lang() === 'pl') {
+                        <span class="th-en">{{ raceLabelEn(race) }}</span>
+                      }
+                    </th>
+                  }
+                </tr>
+              </thead>
+              <tbody>
+                @for (tier of monsterTiers(); track tier) {
+                  <tr>
+                    <th>M{{ tier }}</th>
+                    @for (race of monsterRaces; track race) {
+                      <td [class.locked]="!raceEnabled(race)">
+                        @if (raceEnabled(race)) {
+                          <input
+                            type="number"
+                            min="0"
+                            [ngModel]="monsterCoinRates()[tier]?.[race] ?? 0"
+                            (ngModelChange)="setMonsterCoinRate(tier, race, $event)"
+                            [name]="'mcrate-' + tier + '-' + race"
+                          />
+                        } @else {
+                          -
+                        }
+                      </td>
+                    }
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        </article>
+
+        <article class="panel block current">
+          <h2>{{ t()('army.monsterValue') }}</h2>
+          <h3 class="subhead">{{ t()('army.silver') }}</h3>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th></th>
+                  @for (race of monsterRaces; track race) {
+                    <th>
+                      <span class="th-pl">{{ raceLabel(race) }}</span>
+                      @if (i18n.lang() === 'pl') {
+                        <span class="th-en">{{ raceLabelEn(race) }}</span>
+                      }
+                    </th>
+                  }
+                </tr>
+              </thead>
+              <tbody>
+                @for (tier of monsterTiers(); track tier) {
+                  <tr>
+                    <th>M{{ tier }}</th>
+                    @for (race of monsterRaces; track race) {
+                      <td [class.locked]="!raceEnabled(race)">
+                        @if (raceEnabled(race)) {
+                          {{ monsterValueSilver().cells[tier][race] | number: '1.0-0' }}
+                        } @else {
+                          -
+                        }
+                      </td>
+                    }
+                  </tr>
+                }
+                <tr class="sum">
+                  <th>{{ t()('army.silver') }}</th>
+                  @for (race of monsterRaces; track race) {
+                    <td>{{ monsterValueSilver().perRace[race] | number: '1.0-0' }}</td>
+                  }
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <h3 class="subhead">{{ t()('army.dragonCoins') }}</h3>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th></th>
+                  @for (race of monsterRaces; track race) {
+                    <th>
+                      <span class="th-pl">{{ raceLabel(race) }}</span>
+                      @if (i18n.lang() === 'pl') {
+                        <span class="th-en">{{ raceLabelEn(race) }}</span>
+                      }
+                    </th>
+                  }
+                </tr>
+              </thead>
+              <tbody>
+                @for (tier of monsterTiers(); track tier) {
+                  <tr>
+                    <th>M{{ tier }}</th>
+                    @for (race of monsterRaces; track race) {
+                      <td [class.locked]="!raceEnabled(race)">
+                        @if (raceEnabled(race)) {
+                          {{ monsterValueCoins().cells[tier][race] | number: '1.0-0' }}
+                        } @else {
+                          -
+                        }
+                      </td>
+                    }
+                  </tr>
+                }
+                <tr class="sum">
+                  <th>{{ t()('army.dragonCoins') }}</th>
+                  @for (race of monsterRaces; track race) {
+                    <td>{{ monsterValueCoins().perRace[race] | number: '1.0-0' }}</td>
+                  }
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <p class="foot" [innerHTML]="monsterValueFootHtml()"></p>
+        </article>
+
+        <article class="panel block buy">
+          <h2>{{ t()('army.monsterBuyCost') }}</h2>
+          <h3 class="subhead">{{ t()('army.silver') }}</h3>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th></th>
+                  @for (race of monsterRaces; track race) {
+                    <th>
+                      <span class="th-pl">{{ raceLabel(race) }}</span>
+                      @if (i18n.lang() === 'pl') {
+                        <span class="th-en">{{ raceLabelEn(race) }}</span>
+                      }
+                    </th>
+                  }
+                </tr>
+              </thead>
+              <tbody>
+                @for (tier of monsterTiers(); track tier) {
+                  <tr>
+                    <th>M{{ tier }}</th>
+                    @for (race of monsterRaces; track race) {
+                      <td [class.locked]="!raceEnabled(race)">
+                        @if (raceEnabled(race)) {
+                          {{ monsterBuySilver().cells[tier][race] | number: '1.0-0' }}
+                        } @else {
+                          -
+                        }
+                      </td>
+                    }
+                  </tr>
+                }
+                <tr class="sum">
+                  <th>{{ t()('army.silver') }}</th>
+                  @for (race of monsterRaces; track race) {
+                    <td>{{ monsterBuySilver().perRace[race] | number: '1.0-0' }}</td>
+                  }
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <h3 class="subhead">{{ t()('army.dragonCoins') }}</h3>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th></th>
+                  @for (race of monsterRaces; track race) {
+                    <th>
+                      <span class="th-pl">{{ raceLabel(race) }}</span>
+                      @if (i18n.lang() === 'pl') {
+                        <span class="th-en">{{ raceLabelEn(race) }}</span>
+                      }
+                    </th>
+                  }
+                </tr>
+              </thead>
+              <tbody>
+                @for (tier of monsterTiers(); track tier) {
+                  <tr>
+                    <th>M{{ tier }}</th>
+                    @for (race of monsterRaces; track race) {
+                      <td [class.locked]="!raceEnabled(race)">
+                        @if (raceEnabled(race)) {
+                          {{ monsterBuyCoins().cells[tier][race] | number: '1.0-0' }}
+                        } @else {
+                          -
+                        }
+                      </td>
+                    }
+                  </tr>
+                }
+                <tr class="sum">
+                  <th>{{ t()('army.dragonCoins') }}</th>
+                  @for (race of monsterRaces; track race) {
+                    <td>{{ monsterBuyCoins().perRace[race] | number: '1.0-0' }}</td>
+                  }
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <p class="foot" [innerHTML]="monsterBuyCostFootHtml()"></p>
+        </article>
+      </div>
+    }
   </div>
 </section>

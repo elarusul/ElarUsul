@@ -1,2 +1,23 @@
-<app-captains />
+<div class="lang-bar" role="group" [attr.aria-label]="i18n.t()('lang.aria')">
+  <button
+    type="button"
+    class="lang-btn"
+    [class.is-active]="i18n.lang() === 'pl'"
+    (click)="i18n.setLang('pl')"
+  >
+    PL
+  </button>
+  <span class="lang-sep" aria-hidden="true">·</span>
+  <button
+    type="button"
+    class="lang-btn"
+    [class.is-active]="i18n.lang() === 'en'"
+    (click)="i18n.setLang('en')"
+  >
+    EN
+  </button>
+</div>
+
+<!-- Sekcja Bohater i Kapitanowie tymczasowo ukryta -->
+<!-- <app-captains /> -->
 <app-army />

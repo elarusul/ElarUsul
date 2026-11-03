@@ -1,9 +1,9 @@
 :host {
   display: block;
-  background: #f3e6c8;
+  background: transparent;
   color: #3c2918;
   font-family: 'Palatino Linotype', Palatino, Georgia, serif;
-  border-bottom: 1px solid #c6a56d;
+  border-bottom: 1px solid rgba(198, 165, 109, 0.55);
 }
 
 .top {
@@ -34,6 +34,48 @@
   height: 5px;
   background: #8d6a38;
   transform: rotate(45deg);
+}
+
+.soon.panel {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  width: min(720px, calc(100% - 24px));
+  margin: 4px auto 2px;
+  padding: 18px 20px;
+  border: 1px solid #c4a882;
+  border-radius: 10px;
+  background: #fff6e4;
+  box-shadow:
+    0 1px 2px rgba(90, 70, 40, 0.1),
+    0 0 0 1px rgba(168, 148, 120, 0.22);
+  text-align: center;
+}
+
+.soon-gem {
+  width: 6px;
+  height: 6px;
+  background: #8d6a38;
+  transform: rotate(45deg);
+  opacity: 0.85;
+}
+
+.soon-title {
+  color: #4e3824;
+  font-size: 0.95rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.soon-hint {
+  margin: 0;
+  max-width: 36rem;
+  color: #5a4328;
+  font-size: 0.84rem;
+  line-height: 1.45;
 }
 
 .grid {
@@ -89,6 +131,7 @@
   height: 100%;
   object-fit: contain;
   background: transparent;
+  filter: saturate(0.82) brightness(0.96) contrast(0.98);
 }
 
 .portrait .faction {
@@ -109,7 +152,7 @@
 }
 
 .card.is-locked .face {
-  filter: grayscale(1);
+  filter: grayscale(1) brightness(0.97);
 }
 
 .card.is-locked .faction {
@@ -261,10 +304,13 @@
 }
 
 .detail-card {
-  padding: 0.55rem 0.7rem;
-  border: 1px solid rgba(141, 90, 34, 0.28);
-  border-radius: 6px;
-  background: rgba(246, 236, 216, 0.55);
+  padding: 0.55rem 0.75rem;
+  border: 1px solid #c4a882;
+  border-radius: 10px;
+  background: #fff6e4;
+  box-shadow:
+    0 1px 2px rgba(90, 70, 40, 0.1),
+    0 0 0 1px rgba(168, 148, 120, 0.22);
 }
 
 .detail-head {
