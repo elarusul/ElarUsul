@@ -260,7 +260,7 @@
 
 .tools-row {
   display: flex;
-  flex-wrap: nowrap;
+  flex-wrap: wrap;
   gap: 8px 10px;
   align-items: end;
   width: 100%;
@@ -282,12 +282,12 @@
 
 .tool-wide {
   flex: 1.35 1 0;
-  min-width: 6.75rem;
+  min-width: 0;
 }
 
 .tool-tier {
   flex: 0.85 1 0;
-  min-width: 4.75rem;
+  min-width: 0;
   max-width: none;
 }
 
@@ -321,7 +321,7 @@ table input {
 }
 
 .tool-wide input[type='number'] {
-  min-width: 6.5ch;
+  min-width: 0;
 }
 
 .linkish {
@@ -1096,5 +1096,43 @@ tbody th {
   .board-row > .block {
     display: block;
     grid-row: auto;
+  }
+}
+
+/* Telefon: 2×2 zamiast jednego rzędu, który wypychał Max Tier M. */
+@media (max-width: 720px) {
+  .setup-row,
+  .setup-row > .toolbar,
+  .tools-row {
+    max-width: 100%;
+    min-width: 0;
+    overflow-x: clip;
+  }
+
+  .tools-row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 10px 12px;
+    align-items: end;
+  }
+
+  .tool,
+  .tool-wide,
+  .tool-tier {
+    flex: none;
+    width: auto;
+    min-width: 0;
+    max-width: none;
+  }
+
+  .tools-row .tool input[type='number'] {
+    min-width: 0;
+    max-width: 100%;
+  }
+}
+
+@media (max-width: 380px) {
+  .tools-row {
+    grid-template-columns: minmax(0, 1fr);
   }
 }
