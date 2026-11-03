@@ -4,19 +4,18 @@ import {
   computed,
   effect,
   inject,
-  OnDestroy,
   signal,
+  untracked,
 } from "@angular/core";
 import { FormsModule } from "@angular/forms";
 import { I18nService } from "../i18n/i18n.service";
 import {
   ARMY_TYPES,
   ArmyType,
-  DEFAULT_CURRENT,
   DEFAULT_RATES,
   FLOOR_SILVER,
   FLYING_MIN_TIER,
-  OFFICIAL_LEADERSHIP,
+  GUARDS_MAX_TIER,
   cloneGrid,
   emptyGrid,
   emptyRow,
@@ -42,6 +41,7 @@ import {
   MONSTER_FLOOR_SILVER,
   MONSTER_MIN_TIER,
   MONSTER_NAMES,
+  MONSTER_PLAN_MAX_TIER,
   MONSTER_RACES,
   MonsterRace,
   cloneMonsterGrid,
@@ -50,10 +50,9 @@ import {
 } from "./monsters.data";
 import { loadArmyState, saveArmyState } from "./army.persist";
 import {
-  recognizeTroopImage,
-  revokeScanPreviews,
-  type ScanFileResult,
-  type ScanHit,
+  mergeTroopHits,
+  scanTroopScreenshot,
+  type TroopScanHit,
 } from "./army-scan";
 import { guardsTierIcon, monsterTierIcon } from "./troop-icons";
 
@@ -65,15 +64,16 @@ const SAVED = loadArmyState();
   templateUrl: "./army-page.html",
   styleUrl: "./army-page.css",
 })
-export class ArmyPage implements OnDestroy {
+export class ArmyPage {
   protected readonly i18n = inject(I18nService);
   protected readonly t = this.i18n.t;
 
   protected readonly types = ARMY_TYPES;
   protected readonly monsterRaces = MONSTER_RACES;
-  protected readonly leadership = OFFICIAL_LEADERSHIP;
   protected readonly flyingMinTier = FLYING_MIN_TIER;
   protected readonly monsterMinTier = MONSTER_MIN_TIER;
+  protected readonly guardsMaxTier = GUARDS_MAX_TIER;
+  protected readonly monsterPlanMaxTier = MONSTER_PLAN_MAX_TIER;
 
   protected typeLabel(type: ArmyType): string {
     return this.t()(`army.type.${type}`);
@@ -142,11 +142,17 @@ export class ArmyPage implements OnDestroy {
 
   protected readonly targetCapacity = signal(SAVED.targetCapacity);
   protected readonly dominance = signal(SAVED.dominance);
-  protected readonly maxTier = signal(SAVED.maxTier);
+  protected readonly maxTier = signal(
+    Math.min(GUARDS_MAX_TIER, Math.max(1, SAVED.maxTier)),
+  );
   protected readonly maxTierS = signal(SAVED.maxTierS);
-  protected readonly maxTierM = signal(SAVED.maxTierM);
+  protected readonly maxTierM = signal(
+    Math.min(
+      MONSTER_PLAN_MAX_TIER,
+      Math.max(MONSTER_MIN_TIER, SAVED.maxTierM),
+    ),
+  );
   protected readonly pyramidRatio = signal(SAVED.pyramidRatio);
-  protected readonly roundMonstersToTens = signal(SAVED.roundMonstersToTens);
 
   protected readonly enabled = signal<Record<ArmyType, boolean>>({
     ...SAVED.enabled,
@@ -186,29 +192,12 @@ export class ArmyPage implements OnDestroy {
   protected readonly openHint = signal<string | null>(null);
   protected readonly showSilver = signal(SAVED.showSilver);
 
-  protected readonly scanItems = signal<ScanFileResult[]>([]);
+  /** Wyniki skanera screenshotów → Aktualny stan. */
   protected readonly scanBusy = signal(false);
-  protected readonly scanDragOver = signal(false);
-  protected readonly scanMessage = signal<string | null>(null);
-
-  protected readonly scanHits = computed(() => {
-    const merged = new Map<string, ScanHit>();
-    for (const item of this.scanItems()) {
-      for (const hit of item.hits) {
-        const key =
-          hit.kind === "guards"
-            ? `g:${hit.type}:${hit.tier}`
-            : `m:${hit.race}:${hit.tier}`;
-        merged.set(key, hit);
-      }
-    }
-    return [...merged.values()].sort((a, b) => {
-      if (a.kind !== b.kind) return a.kind === "guards" ? -1 : 1;
-      if (a.tier !== b.tier) return a.tier - b.tier;
-      const al = a.label.localeCompare(b.label);
-      return al;
-    });
-  });
+  protected readonly scanDrag = signal(false);
+  protected readonly scanHits = signal<TroopScanHit[]>([]);
+  protected readonly scanInfo = signal<string | null>(null);
+  protected readonly scanFiles = signal<string[]>([]);
 
   protected readonly plan = computed(() =>
     planArmyTargets({
@@ -225,7 +214,7 @@ export class ArmyPage implements OnDestroy {
       maxTier: this.maxTierM(),
       pyramidRatio: this.pyramidRatio(),
       enabled: this.monstersEnabled(),
-      roundToTens: this.roundMonstersToTens(),
+      roundToTens: true,
     }),
   );
 
@@ -235,23 +224,29 @@ export class ArmyPage implements OnDestroy {
   constructor() {
     effect(() => {
       const tiers = this.tiers();
-      this.current.update((grid) =>
-        this.ensureGrid(grid, tiers, DEFAULT_CURRENT),
-      );
-      this.rates.update((grid) => this.ensureGrid(grid, tiers, DEFAULT_RATES));
+      untracked(() => {
+        this.current.update((grid) =>
+          this.ensureGrid(grid, tiers, emptyGrid(tiers)),
+        );
+        this.rates.update((grid) =>
+          this.ensureGrid(grid, tiers, DEFAULT_RATES),
+        );
+      });
     });
 
     effect(() => {
       const tiers = this.monsterTiers();
-      this.currentMonsters.update((grid) =>
-        this.ensureMonsterGrid(grid, tiers, emptyMonsterGrid(tiers)),
-      );
-      this.monsterSilverRates.update((grid) =>
-        this.ensureMonsterGrid(grid, tiers, DEFAULT_MONSTER_SILVER_RATES),
-      );
-      this.monsterCoinRates.update((grid) =>
-        this.ensureMonsterGrid(grid, tiers, DEFAULT_MONSTER_COIN_RATES),
-      );
+      untracked(() => {
+        this.currentMonsters.update((grid) =>
+          this.ensureMonsterGrid(grid, tiers, emptyMonsterGrid(tiers)),
+        );
+        this.monsterSilverRates.update((grid) =>
+          this.ensureMonsterGrid(grid, tiers, DEFAULT_MONSTER_SILVER_RATES),
+        );
+        this.monsterCoinRates.update((grid) =>
+          this.ensureMonsterGrid(grid, tiers, DEFAULT_MONSTER_COIN_RATES),
+        );
+      });
     });
 
     effect(() => {
@@ -263,7 +258,7 @@ export class ArmyPage implements OnDestroy {
         maxTierS: this.maxTierS(),
         maxTierM: this.maxTierM(),
         pyramidRatio: this.pyramidRatio(),
-        roundMonstersToTens: this.roundMonstersToTens(),
+        roundMonstersToTens: true,
         enabled: this.enabled(),
         monstersEnabled: this.monstersEnabled(),
         current: this.current(),
@@ -442,16 +437,16 @@ export class ArmyPage implements OnDestroy {
     signalRef.set(Number.isFinite(n) ? n : 0);
   }
 
-  protected setEnabled(type: ArmyType, value: boolean): void {
-    this.enabled.update((current) => ({ ...current, [type]: value }));
+  protected setMaxTier(value: string | number): void {
+    const n = this.parseAmount(value);
+    this.maxTier.set(Math.min(GUARDS_MAX_TIER, Math.max(1, n)));
   }
 
-  protected setMonsterEnabled(race: MonsterRace, value: boolean): void {
-    this.monstersEnabled.update((current) => ({ ...current, [race]: value }));
-  }
-
-  ngOnDestroy(): void {
-    revokeScanPreviews(this.scanItems());
+  protected setMaxTierM(value: string | number): void {
+    const n = this.parseAmount(value);
+    this.maxTierM.set(
+      Math.min(MONSTER_PLAN_MAX_TIER, Math.max(MONSTER_MIN_TIER, n)),
+    );
   }
 
   /** Zaznacza wartosc przy focusie, zeby wpisanie cyfry nadpisalo np. 0. */
@@ -462,147 +457,142 @@ export class ArmyPage implements OnDestroy {
 
   protected onScanDragOver(event: DragEvent): void {
     event.preventDefault();
-    this.scanDragOver.set(true);
+    this.scanDrag.set(true);
   }
 
   protected onScanDragLeave(event: DragEvent): void {
     event.preventDefault();
-    this.scanDragOver.set(false);
+    this.scanDrag.set(false);
   }
 
   protected onScanDrop(event: DragEvent): void {
     event.preventDefault();
-    this.scanDragOver.set(false);
+    this.scanDrag.set(false);
     const files = event.dataTransfer?.files;
-    if (files?.length) void this.addScanFiles(files);
+    if (files?.length) void this.runScan(files);
   }
 
   protected onScanPick(event: Event): void {
     const input = event.target as HTMLInputElement;
-    if (input.files?.length) void this.addScanFiles(input.files);
+    if (input.files?.length) void this.runScan(input.files);
     input.value = "";
   }
 
-  protected removeScanItem(id: string): void {
-    this.scanItems.update((items) => {
-      const victim = items.find((x) => x.id === id);
-      if (victim) revokeScanPreviews([victim]);
-      return items.filter((x) => x.id !== id);
-    });
-    this.scanMessage.set(null);
+  protected clearScan(): void {
+    this.scanHits.set([]);
+    this.scanFiles.set([]);
+    this.scanInfo.set(null);
   }
 
-  protected clearScanItems(): void {
-    revokeScanPreviews(this.scanItems());
-    this.scanItems.set([]);
-    this.scanMessage.set(null);
-  }
-
-  protected applyScanHits(): void {
+  /**
+   * Nadpisuje komórki Aktualny stan rozpoznanymi ilościami.
+   * Nie dokłada „warstw” poza koniecznym podniesieniem max tier,
+   * żeby wiersze z rozpoznanymi jednostkami były widoczne.
+   */
+  protected applyScan(): void {
     const hits = this.scanHits();
     if (!hits.length) {
-      this.scanMessage.set(this.t()("army.scan.empty"));
+      this.scanInfo.set(this.t()("army.scan.empty"));
       return;
     }
 
-    let guardMax = this.maxTier();
-    let monsterMax = this.maxTierM();
-    for (const hit of hits) {
-      if (hit.kind === "guards") guardMax = Math.max(guardMax, hit.tier);
-      else monsterMax = Math.max(monsterMax, hit.tier);
-    }
-    if (guardMax !== this.maxTier()) this.maxTier.set(Math.min(7, guardMax));
-    if (monsterMax !== this.maxTierM()) {
-      this.maxTierM.set(Math.min(9, Math.max(3, monsterMax)));
-    }
-
-    const guardTiers = Array.from(
-      { length: Math.min(7, Math.max(guardMax, this.maxTier())) },
-      (_, i) => i + 1,
+    const guards = hits.filter(
+      (h): h is TroopScanHit & { type: ArmyType } =>
+        h.kind === "guards" &&
+        !!h.type &&
+        h.tier <= GUARDS_MAX_TIER &&
+        isTypeAvailable(h.type, h.tier),
     );
-    const monsterTop = Math.min(9, Math.max(monsterMax, this.maxTierM()));
+    const monsters = hits.filter(
+      (h): h is TroopScanHit & { race: MonsterRace } =>
+        h.kind === "monster" &&
+        !!h.race &&
+        h.tier >= MONSTER_MIN_TIER &&
+        h.tier <= MONSTER_PLAN_MAX_TIER,
+    );
+
+    const needG = Math.min(
+      GUARDS_MAX_TIER,
+      Math.max(this.maxTier(), ...guards.map((h) => h.tier), 1),
+    );
+    const needM = Math.min(
+      MONSTER_PLAN_MAX_TIER,
+      Math.max(
+        this.maxTierM(),
+        ...monsters.map((h) => h.tier),
+        MONSTER_MIN_TIER,
+      ),
+    );
+
+    // Rozszerz siatki synchronicznie w tym samym update — bez czekania na effect.
+    const guardTiers = Array.from({ length: needG }, (_, i) => i + 1);
     const monsterTiers = Array.from(
-      { length: monsterTop - 2 },
+      { length: Math.max(0, needM - 2) },
       (_, i) => i + 3,
     );
 
+    if (needG !== this.maxTier()) this.maxTier.set(needG);
+    if (needM !== this.maxTierM()) this.maxTierM.set(needM);
+
+    let written = 0;
     this.current.update((grid) => {
       const next = cloneGrid(grid, guardTiers);
-      for (const hit of hits) {
-        if (hit.kind !== "guards" || !hit.type) continue;
-        if (!isTypeAvailable(hit.type, hit.tier)) continue;
+      for (const hit of guards) {
         if (!next[hit.tier]) next[hit.tier] = emptyRow();
         next[hit.tier][hit.type] = hit.count;
+        written++;
       }
       return next;
     });
-
     this.currentMonsters.update((grid) => {
       const next = cloneMonsterGrid(grid, monsterTiers);
-      for (const hit of hits) {
-        if (hit.kind !== "monster" || !hit.race) continue;
+      for (const hit of monsters) {
         if (!next[hit.tier]) next[hit.tier] = emptyMonsterRow();
         next[hit.tier][hit.race] = hit.count;
+        written++;
       }
       return next;
     });
 
-    this.scanMessage.set(
-      this.t()("army.scan.applied", undefined, { count: hits.length }),
+    this.scanInfo.set(
+      this.t()("army.scan.applied", undefined, { count: written }),
     );
   }
 
-  private async addScanFiles(fileList: FileList | File[]): Promise<void> {
+  private async runScan(fileList: FileList | File[]): Promise<void> {
     const images = [...fileList].filter((f) => f.type.startsWith("image/"));
     if (!images.length) return;
 
-    const additions: ScanFileResult[] = images.map((file, index) => ({
-      id: Date.now() + "-" + index + "-" + file.name,
-      fileName: file.name,
-      previewUrl: URL.createObjectURL(file),
-      status: "pending" as const,
-      progress: 0,
-      text: "",
-      hits: [],
-    }));
-
-    this.scanItems.update((items) => [...items, ...additions]);
-    this.scanMessage.set(null);
     this.scanBusy.set(true);
+    this.scanInfo.set(this.t()("army.scan.scanning"));
+    this.scanFiles.set(images.map((f) => f.name));
 
     try {
+      const groups: TroopScanHit[][] = [];
       for (let i = 0; i < images.length; i++) {
-        const id = additions[i].id;
-        const file = images[i];
-        this.patchScanItem(id, { status: "scanning", progress: 0.05 });
         try {
-          const { text, hits } = await recognizeTroopImage(file, (prog) => {
-            this.patchScanItem(id, { progress: prog });
-          });
-          this.patchScanItem(id, {
-            status: "done",
-            progress: 1,
-            text,
-            hits,
-          });
+          const hits = await scanTroopScreenshot(images[i]);
+          groups.push(hits);
         } catch {
-          this.patchScanItem(id, {
-            status: "error",
-            progress: 1,
-            error: this.t()("army.scan.error"),
-            hits: [],
-          });
+          // pomiń uszkodzony plik
         }
+        this.scanInfo.set(
+          this.t()("army.scan.scanning") + ` (${i + 1}/${images.length})`,
+        );
       }
+      const merged = mergeTroopHits(groups);
+      this.scanHits.set(merged);
+      this.scanInfo.set(
+        merged.length
+          ? this.t()("army.scan.found", undefined, { count: merged.length })
+          : this.t()("army.scan.none"),
+      );
+    } catch {
+      this.scanHits.set([]);
+      this.scanInfo.set(this.t()("army.scan.error"));
     } finally {
       this.scanBusy.set(false);
     }
-  }
-
-  private patchScanItem(id: string, patch: Partial<ScanFileResult>): void {
-    this.scanItems.update((items) =>
-      items.map((item) => (item.id === id ? { ...item, ...patch } : item)),
-    );
   }
 
   protected setCurrent(

@@ -1,6 +1,7 @@
 import {
   ARMY_TYPES,
   ArmyType,
+  GUARDS_MAX_TIER,
   OFFICIAL_LEADERSHIP,
   emptyRow,
   isTypeAvailable,
@@ -81,7 +82,10 @@ export function measureLeadership(grid: ArmyGrid, tiers: number[]): number {
  * 3) Convert tier Leadership → unit count via official cost (1/1/2/20).
  */
 export function planArmyTargets(input: ArmyPlanInput): ArmyPlanResult {
-  const maxTier = Math.max(1, Math.min(7, Math.floor(input.maxTier)));
+  const maxTier = Math.max(
+    1,
+    Math.min(GUARDS_MAX_TIER, Math.floor(input.maxTier)),
+  );
   const ratio = Math.max(1.01, input.pyramidRatio);
   const tiers = Array.from({ length: maxTier }, (_, i) => i + 1);
   const targets: ArmyGrid = {};

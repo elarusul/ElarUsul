@@ -15,6 +15,9 @@ export const MONSTER_RACES: MonsterRace[] = [
 export const MONSTER_MIN_TIER = 3;
 export const MONSTER_MAX_TIER = 9;
 
+/** Tymczasowy limit warstw potworów w kalkulatorze (później rozszerzymy). */
+export const MONSTER_PLAN_MAX_TIER = 4;
+
 /** Official Dominance cost per unit. */
 export const MONSTER_DOMINANCE: Record<number, Record<MonsterRace, number>> = {
   3: { beast: 6, giant: 8, elemental: 3, dragon: 7 },
@@ -150,7 +153,7 @@ export function cloneMonsterGrid(
 export function monsterTiersUpTo(maxTier: number): number[] {
   const capped = Math.max(
     MONSTER_MIN_TIER,
-    Math.min(MONSTER_MAX_TIER, Math.floor(maxTier)),
+    Math.min(MONSTER_PLAN_MAX_TIER, Math.floor(maxTier)),
   );
   const tiers: number[] = [];
   for (let t = MONSTER_MIN_TIER; t <= capped; t++) tiers.push(t);

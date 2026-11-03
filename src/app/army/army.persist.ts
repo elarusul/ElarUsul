@@ -1,14 +1,17 @@
 import {
   ARMY_TYPES,
   ArmyType,
-  DEFAULT_CURRENT,
   DEFAULT_RATES,
   DEFAULT_TIERS,
+  GUARDS_MAX_TIER,
   cloneGrid,
+  emptyGrid,
 } from './army.data';
 import {
   DEFAULT_MONSTER_COIN_RATES,
   DEFAULT_MONSTER_SILVER_RATES,
+  MONSTER_MIN_TIER,
+  MONSTER_PLAN_MAX_TIER,
   MONSTER_RACES,
   MonsterGrid,
   MonsterRace,
@@ -52,11 +55,14 @@ const DEFAULT_MONSTERS_ENABLED: Record<MonsterRace, boolean> = {
   dragon: true,
 };
 
+/** Pierwsze uruchomienie (pusty storage): zera — dane pojawiają się po wczytaniu / wpisaniu. */
 export function defaultArmyState(): ArmyPersistedState {
+  const tiers = [...DEFAULT_TIERS];
+  const monsterTiers = [3, 4];
   return {
     v: STORAGE_VERSION,
-    targetCapacity: 58679,
-    dominance: 2000,
+    targetCapacity: 0,
+    dominance: 0,
     maxTier: 5,
     maxTierS: 5,
     maxTierM: 4,
@@ -64,11 +70,17 @@ export function defaultArmyState(): ArmyPersistedState {
     roundMonstersToTens: true,
     enabled: { ...DEFAULT_ENABLED },
     monstersEnabled: { ...DEFAULT_MONSTERS_ENABLED },
-    current: cloneGrid(DEFAULT_CURRENT, DEFAULT_TIERS),
-    rates: cloneGrid(DEFAULT_RATES, DEFAULT_TIERS),
-    currentMonsters: emptyMonsterGrid([3, 4]),
-    monsterSilverRates: cloneMonsterGrid(DEFAULT_MONSTER_SILVER_RATES, [3, 4, 5, 6, 7, 8, 9]),
-    monsterCoinRates: cloneMonsterGrid(DEFAULT_MONSTER_COIN_RATES, [3, 4, 5, 6, 7, 8, 9]),
+    current: emptyGrid(tiers),
+    rates: cloneGrid(DEFAULT_RATES, tiers),
+    currentMonsters: emptyMonsterGrid(monsterTiers),
+    monsterSilverRates: cloneMonsterGrid(
+      DEFAULT_MONSTER_SILVER_RATES,
+      [3, 4, 5, 6, 7, 8, 9],
+    ),
+    monsterCoinRates: cloneMonsterGrid(
+      DEFAULT_MONSTER_COIN_RATES,
+      [3, 4, 5, 6, 7, 8, 9],
+    ),
     showSilver: false,
   };
 }
@@ -183,9 +195,21 @@ export function loadArmyState(): ArmyPersistedState {
       v: STORAGE_VERSION,
       targetCapacity: Math.max(0, asFiniteNumber(parsed.targetCapacity, defaults.targetCapacity)),
       dominance: Math.max(0, asFiniteNumber(parsed.dominance, defaults.dominance)),
-      maxTier: Math.max(1, Math.min(7, Math.round(asFiniteNumber(parsed.maxTier, defaults.maxTier)))),
+      maxTier: Math.max(
+        1,
+        Math.min(
+          GUARDS_MAX_TIER,
+          Math.round(asFiniteNumber(parsed.maxTier, defaults.maxTier)),
+        ),
+      ),
       maxTierS: Math.max(1, Math.min(9, Math.round(asFiniteNumber(parsed.maxTierS, defaults.maxTierS)))),
-      maxTierM: Math.max(3, Math.min(9, Math.round(asFiniteNumber(parsed.maxTierM, defaults.maxTierM)))),
+      maxTierM: Math.max(
+        MONSTER_MIN_TIER,
+        Math.min(
+          MONSTER_PLAN_MAX_TIER,
+          Math.round(asFiniteNumber(parsed.maxTierM, defaults.maxTierM)),
+        ),
+      ),
       pyramidRatio: Math.max(
         1.01,
         Math.min(5, asFiniteNumber(parsed.pyramidRatio, defaults.pyramidRatio)),

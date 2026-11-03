@@ -32,6 +32,9 @@ export const OFFICIAL_LEADERSHIP: Record<ArmyType, number> = {
 /** Battle Griffin (Gryfy) — Guardsmen V+. Below that the line does not exist. */
 export const FLYING_MIN_TIER = 5;
 
+/** Tymczasowy limit warstw gwardii w kalkulatorze (później rozszerzymy). */
+export const GUARDS_MAX_TIER = 5;
+
 /**
  * Official minimum silver training cost per unit
  * (totalbattlewiki.com/troops/guardsmen — Training).
@@ -59,12 +62,13 @@ export const DEFAULT_RATES: Record<number, Record<ArmyType, number>> = {
   7: { ...FLOOR_SILVER[7] },
 };
 
+/** Domyślny Aktualny stan — puste (pierwsze uruchomienie / brak storage). */
 export const DEFAULT_CURRENT: Record<number, Record<ArmyType, number>> = {
-  1: { melee: 3109, ranged: 2391, mounted: 0, flying: 0 },
-  2: { melee: 1776, ranged: 0, mounted: 0, flying: 0 },
-  3: { melee: 1015, ranged: 0, mounted: 0, flying: 0 },
-  4: { melee: 580, ranged: 0, mounted: 0, flying: 0 },
-  5: { melee: 331, ranged: 0, mounted: 0, flying: 129 },
+  1: { melee: 0, ranged: 0, mounted: 0, flying: 0 },
+  2: { melee: 0, ranged: 0, mounted: 0, flying: 0 },
+  3: { melee: 0, ranged: 0, mounted: 0, flying: 0 },
+  4: { melee: 0, ranged: 0, mounted: 0, flying: 0 },
+  5: { melee: 0, ranged: 0, mounted: 0, flying: 0 },
 };
 
 export const DEFAULT_TIERS = [1, 2, 3, 4, 5] as const;
