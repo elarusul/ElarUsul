@@ -389,6 +389,7 @@ table input {
 .th-pl,
 .th-en {
   display: block;
+  text-align: left;
 }
 
 .th-en {
@@ -687,7 +688,7 @@ table input {
 }
 
 .silver-row thead th:not(:first-child) {
-  text-align: center;
+  text-align: left;
   vertical-align: bottom;
   font-size: 0.52rem;
   font-weight: 700;
@@ -699,8 +700,10 @@ table input {
   word-break: break-word;
 }
 
-.silver-row .th-pl {
+.silver-row .th-pl,
+.silver-row .th-en {
   display: block;
+  text-align: left;
 }
 
 .silver-row .th-en {
@@ -708,7 +711,7 @@ table input {
 }
 
 .silver-row tbody td {
-  text-align: right;
+  text-align: left;
   font-variant-numeric: tabular-nums;
   font-size: 0.66rem;
   line-height: 1.2;
@@ -732,7 +735,7 @@ table input {
   border: 1px solid #c4a882;
   border-radius: 5px;
   background: #fffcf5;
-  text-align: right;
+  text-align: left;
   font-size: 0.66rem;
   font-variant-numeric: tabular-nums;
 }
@@ -749,6 +752,7 @@ table input {
   height: 1.6rem;
   font-size: 0.64rem;
   font-weight: 700;
+  text-align: left;
 }
 
 .silver-row .sum-spacer th,
@@ -856,8 +860,9 @@ table input {
 }
 
 .th-with-icon {
-  justify-content: center;
+  justify-content: flex-start;
   flex-direction: column;
+  align-items: flex-start;
   gap: 3px;
   min-height: 0;
 }
@@ -865,7 +870,7 @@ table input {
 .th-text {
   display: flex;
   flex-direction: column;
-  align-items: center;
+  align-items: flex-start;
   line-height: 1.15;
 }
 
@@ -1005,6 +1010,7 @@ thead th {
   font-weight: 700;
   letter-spacing: 0.02em;
   line-height: 1.15;
+  text-align: left;
   text-transform: uppercase;
   white-space: normal;
   hyphens: auto;
