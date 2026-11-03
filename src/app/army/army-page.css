@@ -5,11 +5,45 @@
 }
 
 .army {
-  --army-gap: 8px;
+  --army-gap: 0.5rem;
+  --army-max: 80rem; /* ~1280px przy 16px */
+  --army-side: 1.5rem;
+  --army-icon: 1.625rem;
+  --army-icon-sm: 1.5rem;
   box-sizing: border-box;
-  width: min(1280px, calc(100% - 24px));
+  width: min(var(--army-max), calc(100% - var(--army-side) * 2));
   margin: 0 auto;
-  padding: 14px 0 28px;
+  padding: 0.875rem 0 1.75rem;
+}
+
+@media (min-width: 1920px) {
+  .army {
+    --army-max: 96rem; /* ~1630px */
+    --army-side: 2rem;
+    --army-gap: 0.625rem;
+  }
+}
+
+@media (min-width: 2560px) {
+  .army {
+    --army-max: 112rem; /* ~2128px przy 19px */
+    --army-side: 2.5rem;
+    --army-gap: 0.75rem;
+    --army-icon: 1.75rem;
+    --army-icon-sm: 1.625rem;
+    padding: 1.25rem 0 2.5rem;
+  }
+}
+
+@media (min-width: 3840px) {
+  .army {
+    --army-max: 120rem; /* szeroki, ale czytelny układ 3 kolumn */
+    --army-side: 3rem;
+    --army-gap: 0.875rem;
+    --army-icon: 1.875rem;
+    --army-icon-sm: 1.75rem;
+    padding: 1.5rem 0 3rem;
+  }
 }
 
 .banner {
@@ -786,8 +820,8 @@ table input {
 
 .troop-icon {
   flex-shrink: 0;
-  width: 28px;
-  height: 28px;
+  width: var(--army-icon, 1.625rem);
+  height: var(--army-icon, 1.625rem);
   object-fit: contain;
   border-radius: 5px;
   background: rgba(255, 250, 240, 0.65);
@@ -795,8 +829,8 @@ table input {
 }
 
 .troop-icon.sm {
-  width: 26px;
-  height: 26px;
+  width: var(--army-icon-sm, 1.5rem);
+  height: var(--army-icon-sm, 1.5rem);
   border-radius: 4px;
 }
 
@@ -878,9 +912,9 @@ table input {
 }
 
 .block.current .cell-with-icon .troop-icon {
-  flex: 0 0 24px;
-  width: 24px;
-  height: 24px;
+  flex: 0 0 var(--army-icon-sm, 1.5rem);
+  width: var(--army-icon-sm, 1.5rem);
+  height: var(--army-icon-sm, 1.5rem);
   order: 0;
   border-radius: 4px;
   background: transparent;

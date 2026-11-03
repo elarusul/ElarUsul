@@ -6,9 +6,22 @@
 
 .stacking {
   box-sizing: border-box;
-  width: min(960px, calc(100% - 24px));
+  --stack-max: 60rem;
+  width: min(var(--stack-max), calc(100% - 1.5rem * 2));
   margin: 0 auto;
-  padding: 14px 0 24px;
+  padding: 0.875rem 0 1.5rem;
+}
+
+@media (min-width: 2560px) {
+  .stacking {
+    --stack-max: 72rem;
+  }
+}
+
+@media (min-width: 3840px) {
+  .stacking {
+    --stack-max: 84rem;
+  }
 }
 
 .banner {
