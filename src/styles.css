@@ -4,8 +4,17 @@ body {
   min-height: 100%;
 }
 
+:root {
+  /* Wspólne rozmiary UI — rosną z html { font-size }. */
+  --ui-info: 1rem;
+  --ui-gem: 0.3125rem;
+  --ui-rule: 1.75rem;
+  --ui-control-h: 1.75rem;
+  --ui-control-h-lg: 1.875rem;
+}
+
 html {
-  /* Bazowy rozmiar — reszta UI w rem skaluje się razem z monitorem. */
+  /* Bazowy rozmiar — rem w całym UI skaluje się razem z monitorem. */
   font-size: 16px;
   -webkit-text-size-adjust: 100%;
   text-size-adjust: 100%;
@@ -15,30 +24,63 @@ body {
   background: #e4cfab;
 }
 
-/* Full HD+ / duże laptopy */
+/*
+  Uwaga: monitor 4K przy skalowaniu Windows 150–200% ma viewport CSS
+  ~1920–2560 px, nie 3840. Dlatego mocniej podnosimy font już od Full HD+.
+*/
+
+/* Full HD / 4K @ 200% */
 @media (min-width: 1920px) {
   html {
-    font-size: 17px;
+    font-size: 18px;
+  }
+
+  :root {
+    --ui-info: 1.05rem;
+    --ui-control-h: 1.8rem;
+    --ui-control-h-lg: 1.95rem;
   }
 }
 
-/* QHD / 1440p */
+/* QHD / 4K @ 150% */
 @media (min-width: 2560px) {
   html {
-    font-size: 19px;
+    font-size: 21px;
+  }
+
+  :root {
+    --ui-info: 1.1rem;
+    --ui-gem: 0.35rem;
+    --ui-rule: 2rem;
+    --ui-control-h: 1.9rem;
+    --ui-control-h-lg: 2.05rem;
   }
 }
 
 /* Ultrawide / 3K */
 @media (min-width: 3200px) {
   html {
-    font-size: 21px;
+    font-size: 23px;
+  }
+
+  :root {
+    --ui-info: 1.15rem;
+    --ui-control-h: 2rem;
+    --ui-control-h-lg: 2.15rem;
   }
 }
 
-/* 4K UHD */
+/* Native 4K (skala 100%) */
 @media (min-width: 3840px) {
   html {
-    font-size: 24px;
+    font-size: 26px;
+  }
+
+  :root {
+    --ui-info: 1.2rem;
+    --ui-gem: 0.375rem;
+    --ui-rule: 2.25rem;
+    --ui-control-h: 2.1rem;
+    --ui-control-h-lg: 2.25rem;
   }
 }

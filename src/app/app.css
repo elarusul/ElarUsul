@@ -74,11 +74,22 @@ app-army {
   line-height: 1.2;
 }
 
+@media (min-width: 1920px) {
+  .lang-btn {
+    font-size: 0.75rem;
+  }
+}
+
 @media (min-width: 2560px) {
   .lang-bar {
     right: 1.25rem;
     bottom: 1.25rem;
-    padding: 0.35rem 0.65rem;
+    padding: 0.4rem 0.75rem;
+  }
+
+  .lang-btn {
+    font-size: 0.78rem;
+    padding: 0.2rem 0.55rem;
   }
 }
 
@@ -86,6 +97,11 @@ app-army {
   .lang-bar {
     right: 1.75rem;
     bottom: 1.75rem;
+    padding: 0.45rem 0.85rem;
+  }
+
+  .lang-btn {
+    font-size: 0.82rem;
   }
 }
 

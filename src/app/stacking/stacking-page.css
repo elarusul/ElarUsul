@@ -12,15 +12,23 @@
   padding: 0.875rem 0 1.5rem;
 }
 
+@media (min-width: 1920px) {
+  .stacking {
+    --stack-max: 66rem;
+  }
+}
+
 @media (min-width: 2560px) {
   .stacking {
-    --stack-max: 72rem;
+    --stack-max: 76rem;
+    padding: 1.25rem 0 2rem;
   }
 }
 
 @media (min-width: 3840px) {
   .stacking {
-    --stack-max: 84rem;
+    --stack-max: 88rem;
+    padding: 1.5rem 0 2.5rem;
   }
 }
 
@@ -28,8 +36,8 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 10px;
-  margin: 0 0 8px;
+  gap: 0.625rem;
+  margin: 0 0 0.5rem;
   color: #4e3824;
   font-size: 0.88rem;
   font-weight: 600;
@@ -38,14 +46,14 @@
 }
 
 .rule {
-  width: 28px;
+  width: var(--ui-rule, 1.75rem);
   height: 1px;
   background: #8d6a38;
 }
 
 .gem {
-  width: 5px;
-  height: 5px;
+  width: var(--ui-gem, 0.3125rem);
+  height: var(--ui-gem, 0.3125rem);
   background: #8d6a38;
   transform: rotate(45deg);
 }
@@ -111,8 +119,8 @@ label.check {
 .info {
   display: inline-grid;
   place-items: center;
-  width: 16px;
-  height: 16px;
+  width: var(--ui-info, 1rem);
+  height: var(--ui-info, 1rem);
   margin-inline-start: 0.3em;
   padding: 0;
   border: 1px solid #c6a56d;
