@@ -49,11 +49,6 @@ import {
   emptyMonsterRow,
 } from "./monsters.data";
 import { loadArmyState, saveArmyState } from "./army.persist";
-import {
-  mergeTroopHits,
-  scanTroopScreenshot,
-  type TroopScanHit,
-} from "./army-scan";
 import { guardsTierIcon, monsterTierIcon } from "./troop-icons";
 
 const SAVED = loadArmyState();
@@ -191,13 +186,6 @@ export class ArmyPage {
 
   protected readonly openHint = signal<string | null>(null);
   protected readonly showSilver = signal(SAVED.showSilver);
-
-  /** Wyniki skanera screenshotów → Aktualny stan. */
-  protected readonly scanBusy = signal(false);
-  protected readonly scanDrag = signal(false);
-  protected readonly scanHits = signal<TroopScanHit[]>([]);
-  protected readonly scanInfo = signal<string | null>(null);
-  protected readonly scanFiles = signal<string[]>([]);
 
   protected readonly plan = computed(() =>
     planArmyTargets({
@@ -453,116 +441,6 @@ export class ArmyPage {
   protected selectOnFocus(event: FocusEvent): void {
     const input = event.target as HTMLInputElement;
     void Promise.resolve().then(() => input.select());
-  }
-
-  protected onScanDragOver(event: DragEvent): void {
-    event.preventDefault();
-    this.scanDrag.set(true);
-  }
-
-  protected onScanDragLeave(event: DragEvent): void {
-    event.preventDefault();
-    this.scanDrag.set(false);
-  }
-
-  protected onScanDrop(event: DragEvent): void {
-    event.preventDefault();
-    this.scanDrag.set(false);
-    const files = event.dataTransfer?.files;
-    if (files?.length) void this.runScan(files);
-  }
-
-  protected onScanPick(event: Event): void {
-    const input = event.target as HTMLInputElement;
-    if (input.files?.length) void this.runScan(input.files);
-    input.value = "";
-  }
-
-  protected clearScan(): void {
-    this.scanHits.set([]);
-    this.scanFiles.set([]);
-    this.scanInfo.set(null);
-  }
-
-  /**
-   * Nadpisuje komórki Aktualny stan rozpoznanymi ilościami.
-   * Nie dokłada „warstw” poza koniecznym podniesieniem max tier,
-   * żeby wiersze z rozpoznanymi jednostkami były widoczne.
-   */
-  protected applyScan(): void {
-    const hits = this.scanHits();
-    if (!hits.length) {
-      this.scanInfo.set(this.t()("army.scan.empty"));
-      return;
-    }
-
-    // Na razie skaner obsługuje tylko gwardię (bez potworów).
-    const guards = hits.filter(
-      (h): h is TroopScanHit & { type: ArmyType } =>
-        h.kind === "guards" &&
-        !!h.type &&
-        h.tier <= GUARDS_MAX_TIER &&
-        isTypeAvailable(h.type, h.tier),
-    );
-
-    const needG = Math.min(
-      GUARDS_MAX_TIER,
-      Math.max(this.maxTier(), ...guards.map((h) => h.tier), 1),
-    );
-
-    const guardTiers = Array.from({ length: needG }, (_, i) => i + 1);
-    if (needG !== this.maxTier()) this.maxTier.set(needG);
-
-    let written = 0;
-    this.current.update((grid) => {
-      const next = cloneGrid(grid, guardTiers);
-      for (const hit of guards) {
-        if (!next[hit.tier]) next[hit.tier] = emptyRow();
-        next[hit.tier][hit.type] = hit.count;
-        written++;
-      }
-      return next;
-    });
-
-    this.scanInfo.set(
-      this.t()("army.scan.applied", undefined, { count: written }),
-    );
-  }
-
-  private async runScan(fileList: FileList | File[]): Promise<void> {
-    const images = [...fileList].filter((f) => f.type.startsWith("image/"));
-    if (!images.length) return;
-
-    this.scanBusy.set(true);
-    this.scanInfo.set(this.t()("army.scan.scanning"));
-    this.scanFiles.set(images.map((f) => f.name));
-
-    try {
-      const groups: TroopScanHit[][] = [];
-      for (let i = 0; i < images.length; i++) {
-        try {
-          const hits = await scanTroopScreenshot(images[i]);
-          groups.push(hits);
-        } catch {
-          // pomiń uszkodzony plik
-        }
-        this.scanInfo.set(
-          this.t()("army.scan.scanning") + ` (${i + 1}/${images.length})`,
-        );
-      }
-      const merged = mergeTroopHits(groups);
-      this.scanHits.set(merged);
-      this.scanInfo.set(
-        merged.length
-          ? this.t()("army.scan.found", undefined, { count: merged.length })
-          : this.t()("army.scan.none"),
-      );
-    } catch {
-      this.scanHits.set([]);
-      this.scanInfo.set(this.t()("army.scan.error"));
-    } finally {
-      this.scanBusy.set(false);
-    }
   }
 
   protected setCurrent(

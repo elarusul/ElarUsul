@@ -24,8 +24,7 @@
                 "input": "public"
               }
             ],
-            "styles": ["src/styles.css"],
-            "allowedCommonJsDependencies": ["tesseract.js"]
+            "styles": ["src/styles.css"]
           },
           "configurations": {
             "production": {

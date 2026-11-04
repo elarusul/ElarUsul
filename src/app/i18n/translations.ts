@@ -110,17 +110,6 @@ export const UI_PL: Dict = {
   'army.monsterBuyCostFoot':
     'Do wydania: <strong>%silver%</strong> srebra + <strong>%coins%</strong> smoczych monet',
   'army.info': 'Info',
-  'army.scan': 'Wczytaj ilość wojska ze screenshotów',
-  'army.scan.hint': '',
-  'army.scan.drop': 'Wybierz screeny',
-  'army.scan.scanning': 'Skanowanie…',
-  'army.scan.apply': 'Wpisz do Aktualny stan wojska',
-  'army.scan.clear': 'Wyczyść',
-  'army.scan.found': 'Rozpoznano %count% jednostek — kliknij Wpisz do Aktualny stan wojska.',
-  'army.scan.none': 'Nie znaleziono jednostek na screenach.',
-  'army.scan.error': 'Nie udało się odczytać screenów.',
-  'army.scan.applied': 'Wpisano %count% wartości do Aktualny stan wojska.',
-  'army.scan.empty': 'Brak rozpoznanych ilości do wpisania.',
 };
 
 export const UI_EN: Dict = {
@@ -231,18 +220,6 @@ export const UI_EN: Dict = {
   'army.monsterBuyCostFoot':
     'To spend: <strong>%silver%</strong> silver + <strong>%coins%</strong> dragon coins',
   'army.info': 'Info',
-  'army.scan': 'Load troop counts from screenshots',
-  'army.scan.hint': '',
-  'army.scan.drop': 'Choose screenshots',
-  'army.scan.scanning': 'Scanning…',
-  'army.scan.apply': 'Fill Current troop state',
-  'army.scan.clear': 'Clear',
-  'army.scan.found': 'Recognized %count% units — click Fill Current troop state.',
-  'army.scan.none': 'No units found on the screenshots.',
-  'army.scan.error': 'Could not read the screenshots.',
-  'army.scan.applied': 'Wrote %count% values into Current troop state.',
-  'army.scan.empty': 'No recognized quantities to apply.',
-
   // Captain bonuses (EN) - PL stays in captains.data.ts
   'captain.cleopatra.bonus': 'Army strength',
   'captain.cleopatra.r0': 'Army strength',
