@@ -1,5 +1,10 @@
 import { createWorker, PSM, type Worker } from 'tesseract.js';
-import { cropRgba, type RgbaImage, rgbaToPngBlob, resizeRgba } from './image-utils';
+import {
+  cropRgba,
+  type RgbaImage,
+  rgbaToPngBlob,
+  resizeRgba,
+} from './image-utils';
 
 let sharedWorker: Worker | null = null;
 let workerPromise: Promise<Worker> | null = null;
@@ -31,36 +36,29 @@ export async function terminateOcrWorker(): Promise<void> {
 interface ParsedCandidate {
   value: number;
   raw: string;
-  /** Higher = more trustworthy. */
   quality: number;
 }
 
 function qualityFor(raw: string, value: number): number {
   const compact = raw.replace(/\s/g, '');
   let q = 0;
-  // Best: 1.xxx / 2.xxx thousands (common in city screenshots)
   if (/^[12]([.,]\d{3})+$/.test(compact)) q += 110;
-  // 3-9.xxx is often a gold-frame phantom digit + real 3-digit count
   else if (/^[3-9][.,]\d{3}$/.test(compact)) q += 35;
   else if (/^\d{1,3}([.,]\d{3})+$/.test(compact)) q += 100;
-  // Small plain counts (15, 63, 84, 189, 216, 254, 967)
   else if (/^\d{1,4}$/.test(compact) && value < 10000) q += 70;
-  // 5+ digits without separator are usually phantom-prefix garbage
   else if (String(value).length >= 5) q -= 40;
   else q += 20;
 
-  // Penalize very large army stacks (screenshot noise)
   if (value > 200_000) q -= 50;
-  // Prefer values that look like in-game stacks
   if (value >= 10 && value <= 50_000) q += 10;
-  // Boost clean 3-digit leftovers from "4.216" → 216
   if (/^\d{3}$/.test(compact)) q += 15;
+  // Round hundreds like 100 often come from misread 967 / 1080
+  if (/^[1-9]00$/.test(compact)) q -= 25;
   return q;
 }
 
 /**
- * Expand one OCR string into plausible troop counts.
- * Handles phantom leading digits from gold frame / ribbon (e.g. "4.216" → 216, "92.156" → 2156).
+ * Expand OCR text into plausible troop counts (handles phantom frame digits).
  */
 export function parseTroopCountCandidates(text: string): ParsedCandidate[] {
   const found = new Map<number, ParsedCandidate>();
@@ -87,7 +85,6 @@ export function parseTroopCountCandidates(text: string): ParsedCandidate[] {
       if (Number.isFinite(n) && n > 0) push(cleaned, n);
     }
 
-    // Strip 1–2 leading digits: frame noise often prefixes "4" / "9" / "92"
     const digits = cleaned.replace(/[.,]/g, '');
     for (let strip = 1; strip <= 2 && strip < digits.length; strip++) {
       const restDigits = digits.slice(strip);
@@ -108,9 +105,7 @@ export function parseTroopCountCandidates(text: string): ParsedCandidate[] {
       const sepMatch = cleaned.match(/^(\d{1,2})[.,](.+)$/);
       if (!sepMatch) continue;
       const after = sepMatch[2].replace(/[.,]/g, '');
-      // "4.216" → 216 (phantom tier/frame digit)
       if (/^\d{3}$/.test(after)) push(after, Number(after));
-      // "92.156" → "2.156"
       if (sepMatch[1].length === 2) {
         const rest = `${sepMatch[1][1]}.${sepMatch[2]}`;
         if (/^\d[.,]\d{3}$/.test(rest)) {
@@ -120,11 +115,9 @@ export function parseTroopCountCandidates(text: string): ParsedCandidate[] {
     }
   };
 
-  const lines = String(text || '').split(/\r?\n/);
-  for (const line of lines) {
+  for (const line of String(text || '').split(/\r?\n/)) {
     const trimmed = line.trim();
     if (!trimmed) continue;
-    // "4 63" — do NOT glue across spaces (that creates phantom 463)
     const parts = trimmed.split(/\s+/).filter(Boolean);
     if (parts.length > 1) {
       for (const part of parts) addFromToken(part);
@@ -136,7 +129,6 @@ export function parseTroopCountCandidates(text: string): ParsedCandidate[] {
   return [...found.values()];
 }
 
-/** Back-compat single parse — picks best candidate. */
 export function parseTroopCount(text: string): number | null {
   const cands = parseTroopCountCandidates(text);
   if (!cands.length) return null;
@@ -151,16 +143,151 @@ interface Region {
   h: number;
 }
 
-/**
- * Count sits bottom-right inside the gold frame.
- * Keep ROI right-biased to avoid left frame / roman-numeral noise.
- */
+/** Bottom-right count areas (fractions of the tile). */
 const REGIONS: Region[] = [
-  { x: 0.38, y: 0.72, w: 0.52, h: 0.2 },
-  { x: 0.42, y: 0.74, w: 0.48, h: 0.18 },
-  { x: 0.45, y: 0.55, w: 0.45, h: 0.22 }, // monsters: digits sit a bit higher
-  { x: 0.4, y: 0.58, w: 0.5, h: 0.22 },
+  { x: 0.3, y: 0.68, w: 0.62, h: 0.26 },
+  { x: 0.34, y: 0.72, w: 0.58, h: 0.22 },
+  { x: 0.38, y: 0.52, w: 0.55, h: 0.28 },
 ];
+
+function luma(r: number, g: number, b: number): number {
+  return 0.299 * r + 0.587 * g + 0.114 * b;
+}
+
+function chroma(r: number, g: number, b: number): number {
+  return Math.max(r, g, b) - Math.min(r, g, b);
+}
+
+/**
+ * Isolate white digit fill with black outline on a darker count bar.
+ * Returns binary mask (1 = digit ink).
+ */
+function digitStrokeMask(img: RgbaImage): Uint8Array {
+  const { data, width: w, height: h } = img;
+  const L = new Float32Array(w * h);
+  const S = new Float32Array(w * h);
+  for (let i = 0; i < w * h; i++) {
+    const p = i * 4;
+    L[i] = luma(data[p], data[p + 1], data[p + 2]);
+    S[i] = chroma(data[p], data[p + 1], data[p + 2]);
+  }
+
+  const local = new Float32Array(w * h);
+  for (let y = 0; y < h; y++) {
+    for (let x = 0; x < w; x++) {
+      let sum = 0;
+      let n = 0;
+      for (let dy = -2; dy <= 2; dy++) {
+        for (let dx = -3; dx <= 3; dx++) {
+          const xx = x + dx;
+          const yy = y + dy;
+          if (xx < 0 || yy < 0 || xx >= w || yy >= h) continue;
+          sum += L[yy * w + xx];
+          n++;
+        }
+      }
+      local[y * w + x] = sum / n;
+    }
+  }
+
+  const seed = new Uint8Array(w * h);
+  for (let y = 1; y < h - 1; y++) {
+    for (let x = 1; x < w - 1; x++) {
+      const i = y * w + x;
+      const bright = L[i] >= 170 && S[i] <= 50;
+      const midBright = L[i] >= 150 && S[i] <= 40 && L[i] > local[i] + 35;
+      if (!bright && !midBright) continue;
+
+      let darkN = 0;
+      for (let dy = -1; dy <= 1; dy++) {
+        for (let dx = -1; dx <= 1; dx++) {
+          if (!dx && !dy) continue;
+          const j = (y + dy) * w + (x + dx);
+          if (L[j] < 85) darkN++;
+        }
+      }
+      if (local[i] < 140 || darkN >= 1) seed[i] = 1;
+    }
+  }
+
+  // Light dilate — close gaps in 8 / 0 / 6 without eating armor highlights
+  const mask = new Uint8Array(w * h);
+  for (let y = 1; y < h - 1; y++) {
+    for (let x = 1; x < w - 1; x++) {
+      const i = y * w + x;
+      if (!seed[i]) continue;
+      for (let dy = -1; dy <= 1; dy++) {
+        for (let dx = -1; dx <= 1; dx++) {
+          const j = (y + dy) * w + (x + dx);
+          if (L[j] >= 130 && S[j] <= 65) mask[j] = 1;
+        }
+      }
+    }
+  }
+  return mask;
+}
+
+/** Black digits on white canvas — Tesseract-friendly. */
+function maskToOcrBlob(mask: Uint8Array, w: number, h: number): Promise<Blob | null> {
+  let minX = w;
+  let maxX = -1;
+  let minY = h;
+  let maxY = -1;
+  let count = 0;
+  for (let y = 0; y < h; y++) {
+    for (let x = 0; x < w; x++) {
+      if (!mask[y * w + x]) continue;
+      count++;
+      if (x < minX) minX = x;
+      if (x > maxX) maxX = x;
+      if (y < minY) minY = y;
+      if (y > maxY) maxY = y;
+    }
+  }
+  if (count < 8 || maxX < minX) return Promise.resolve(null);
+
+  // Extra left pad — leading digit is often clipped
+  const padX = Math.max(3, Math.floor((maxX - minX + 1) * 0.1));
+  const padY = 2;
+  minX = Math.max(0, minX - padX);
+  minY = Math.max(0, minY - padY);
+  maxX = Math.min(w - 1, maxX + padY);
+  maxY = Math.min(h - 1, maxY + padY);
+
+  const cw = maxX - minX + 1;
+  const ch = maxY - minY + 1;
+  const border = 12;
+  const bw = cw + border * 2;
+  const bh = ch + border * 2;
+  const canvas = new Uint8ClampedArray(
+    bw * bh * 4,
+  ) as Uint8ClampedArray<ArrayBuffer>;
+  for (let i = 0; i < bw * bh; i++) {
+    const p = i * 4;
+    canvas[p] = 255;
+    canvas[p + 1] = 255;
+    canvas[p + 2] = 255;
+    canvas[p + 3] = 255;
+  }
+  for (let y = 0; y < ch; y++) {
+    for (let x = 0; x < cw; x++) {
+      const on = mask[(minY + y) * w + (minX + x)];
+      const di = ((y + border) * bw + (x + border)) * 4;
+      const v = on ? 0 : 255;
+      canvas[di] = v;
+      canvas[di + 1] = v;
+      canvas[di + 2] = v;
+    }
+  }
+
+  const scale = 14;
+  const up = resizeRgba(
+    { data: canvas, width: bw, height: bh },
+    bw * scale,
+    bh * scale,
+  );
+  return rgbaToPngBlob(up);
+}
 
 function grayscaleNormalizePng(img: RgbaImage): Promise<Blob> {
   const { data, width, height } = img;
@@ -169,7 +296,7 @@ function grayscaleNormalizePng(img: RgbaImage): Promise<Blob> {
   const gray = new Uint8ClampedArray(width * height);
   for (let i = 0; i < width * height; i++) {
     const p = i * 4;
-    const L = 0.299 * data[p] + 0.587 * data[p + 1] + 0.114 * data[p + 2];
+    const L = luma(data[p], data[p + 1], data[p + 2]);
     gray[i] = L;
     if (L < min) min = L;
     if (L > max) max = L;
@@ -190,61 +317,20 @@ function grayscaleNormalizePng(img: RgbaImage): Promise<Blob> {
   return rgbaToPngBlob(up);
 }
 
-function binaryWhitePng(img: RgbaImage, thr: number): Promise<Blob> {
-  const { data, width, height } = img;
-  const rgba = new Uint8ClampedArray(
-    width * height * 4,
-  ) as Uint8ClampedArray<ArrayBuffer>;
-  for (let i = 0; i < width * height; i++) {
-    const p = i * 4;
-    const r = data[p];
-    const g = data[p + 1];
-    const b = data[p + 2];
-    const L = 0.299 * r + 0.587 * g + 0.114 * b;
-    const sat = Math.max(r, g, b) - Math.min(r, g, b);
-    // Strict low-sat white → digits; colored ribbon/glow stays black
-    const on = L >= thr && sat <= 45 ? 255 : 0;
-    rgba[p] = on;
-    rgba[p + 1] = on;
-    rgba[p + 2] = on;
-    rgba[p + 3] = 255;
-  }
-  const pad = 8;
-  const bw = width + pad * 2;
-  const bh = height + pad * 2;
-  const padded = new Uint8ClampedArray(
-    bw * bh * 4,
-  ) as Uint8ClampedArray<ArrayBuffer>;
-  for (let y = 0; y < height; y++) {
-    for (let x = 0; x < width; x++) {
-      const si = (y * width + x) * 4;
-      const di = ((y + pad) * bw + (x + pad)) * 4;
-      padded[di] = rgba[si];
-      padded[di + 1] = rgba[si + 1];
-      padded[di + 2] = rgba[si + 2];
-      padded[di + 3] = 255;
-    }
-  }
-  const up = resizeRgba(
-    { data: padded, width: bw, height: bh },
-    bw * 10,
-    bh * 10,
-  );
-  return rgbaToPngBlob(up);
-}
-
 export interface OcrOutcome {
   count: number | null;
   text: string;
 }
 
 /**
- * Read troop count from bottom-right of a tile.
- * Collects votes across ROIs/preprocessings and picks the most trustworthy parse.
+ * Read troop count: white digits + black outline on dark bar (bottom-right).
  */
 export async function readTroopCount(tile: RgbaImage): Promise<OcrOutcome> {
   const worker = await getWorker();
-  const votes = new Map<number, { quality: number; hits: number; raw: string }>();
+  const votes = new Map<
+    number,
+    { quality: number; hits: number; raw: string }
+  >();
   let anyRaw = '';
 
   const consider = (raw: string) => {
@@ -271,35 +357,44 @@ export async function readTroopCount(tile: RgbaImage): Promise<OcrOutcome> {
     if (left + width > tile.width || top + height > tile.height) continue;
 
     const strip = cropRgba(tile, left, top, width, height);
-    const blobs: Blob[] = [
-      await grayscaleNormalizePng(strip),
-      await binaryWhitePng(strip, 155),
-      await binaryWhitePng(strip, 175),
-      await binaryWhitePng(strip, 195),
-    ];
 
-    for (const blob of blobs) {
+    // Primary: stroke-aware white fill + black outline → black-on-white
+    const mask = digitStrokeMask(strip);
+    const strokeBlob = await maskToOcrBlob(mask, strip.width, strip.height);
+    if (strokeBlob) {
       const {
         data: { text },
-      } = await worker.recognize(blob);
+      } = await worker.recognize(strokeBlob);
       consider(text.trim());
     }
+
+    // Fallback: normalized grayscale of the same strip
+    const grayBlob = await grayscaleNormalizePng(strip);
+    const {
+      data: { text: grayText },
+    } = await worker.recognize(grayBlob);
+    consider(grayText.trim());
   }
 
   if (!votes.size) return { count: null, text: anyRaw };
 
-  // Score = base quality + consensus bonus
-  let bestValue: number | null = null;
-  let bestScore = -Infinity;
-  let bestRaw = anyRaw;
-  for (const [value, meta] of votes) {
-    const score = meta.quality + meta.hits * 15;
-    if (score > bestScore) {
-      bestScore = score;
-      bestValue = value;
-      bestRaw = meta.raw;
-    }
+  // Quality dominates; light consensus bonus (don't let "100" outvote "967")
+  const ranked = [...votes.entries()]
+    .map(([value, meta]) => ({
+      value,
+      raw: meta.raw,
+      score: meta.quality * 3 + meta.hits,
+    }))
+    .sort((a, b) => b.score - a.score);
+
+  let best = ranked[0];
+  // Prefer a non-round reading over "100"/"200" noise when both appeared
+  if (/^[1-9]00$/.test(String(best.value))) {
+    const alt = ranked.find(
+      (r) => r.value !== best.value && r.value >= 10 && r.value <= 9999,
+    );
+    if (alt && alt.score >= best.score - 40) best = alt;
   }
 
-  return { count: bestValue, text: bestRaw || anyRaw };
+  return { count: best.value, text: best.raw || anyRaw };
 }
