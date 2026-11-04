@@ -110,6 +110,15 @@ export const UI_PL: Dict = {
   'army.monsterBuyCostFoot':
     'Do wydania: <strong>%silver%</strong> srebra + <strong>%coins%</strong> smoczych monet',
   'army.info': 'Info',
+  'army.scan': 'Skanuj screenshot',
+  'army.scan.busy': 'Skanowanie…',
+  'army.scan.hint': 'Wgraj zrzut „Wojska w mieście”.',
+  'army.scan.apply': 'Wpisz do aktualnego stanu',
+  'army.scan.cancel': 'Anuluj',
+  'army.scan.empty': 'Nie znaleziono jednostek z kalkulatora na screenshocie.',
+  'army.scan.done': 'Znaleziono %n% typów (%ms% ms). Sprawdź ilości i zatwierdź.',
+  'army.scan.ocrFail': 'nieodczytane',
+  'army.scan.error': 'Skanowanie nie powiodło się. Spróbuj wyraźniejszego zrzutu.',
 };
 
 export const UI_EN: Dict = {
@@ -220,6 +229,15 @@ export const UI_EN: Dict = {
   'army.monsterBuyCostFoot':
     'To spend: <strong>%silver%</strong> silver + <strong>%coins%</strong> dragon coins',
   'army.info': 'Info',
+  'army.scan': 'Scan screenshot',
+  'army.scan.busy': 'Scanning…',
+  'army.scan.hint': 'Upload a “Troops in the city” screenshot.',
+  'army.scan.apply': 'Fill current state',
+  'army.scan.cancel': 'Cancel',
+  'army.scan.empty': 'No calculator units were found on the screenshot.',
+  'army.scan.done': 'Found %n% types (%ms% ms). Review counts and apply.',
+  'army.scan.ocrFail': 'unread',
+  'army.scan.error': 'Scan failed. Try a clearer screenshot.',
   // Captain bonuses (EN) - PL stays in captains.data.ts
   'captain.cleopatra.bonus': 'Army strength',
   'captain.cleopatra.r0': 'Army strength',

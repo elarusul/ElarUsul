@@ -49,9 +49,18 @@ import {
   emptyMonsterRow,
 } from "./monsters.data";
 import { loadArmyState, saveArmyState } from "./army.persist";
+import { isArmyType, isMonsterRace } from "./scanner/scanner-refs";
+import type { ScanHit } from "./scanner/scanner.types";
+import { scanTroopScreenshot } from "./scanner/troop-scanner";
 import { guardsTierIcon, monsterTierIcon } from "./troop-icons";
 
 const SAVED = loadArmyState();
+
+export interface ScanDraftRow {
+  hit: ScanHit;
+  count: number;
+  include: boolean;
+}
 
 @Component({
   selector: "app-army",
@@ -186,6 +195,13 @@ export class ArmyPage {
 
   protected readonly openHint = signal<string | null>(null);
   protected readonly showSilver = signal(SAVED.showSilver);
+
+  protected readonly scanBusy = signal(false);
+  protected readonly scanProgress = signal("");
+  protected readonly scanError = signal<string | null>(null);
+  protected readonly scanStatus = signal<string | null>(null);
+  protected readonly scanDraft = signal<ScanDraftRow[]>([]);
+  private fileInput: HTMLInputElement | null = null;
 
   protected readonly plan = computed(() =>
     planArmyTargets({
@@ -548,6 +564,115 @@ export class ArmyPage {
 
   protected clearCurrentMonsters(): void {
     this.currentMonsters.set(emptyMonsterGrid(this.monsterTiers()));
+  }
+
+  protected openScanPicker(): void {
+    if (this.scanBusy()) return;
+    if (!this.fileInput) {
+      const input = document.createElement("input");
+      input.type = "file";
+      input.accept = "image/*";
+      input.addEventListener("change", () => {
+        const file = input.files?.[0];
+        input.value = "";
+        if (file) void this.runScan(file);
+      });
+      this.fileInput = input;
+    }
+    this.fileInput.click();
+  }
+
+  private async runScan(file: File): Promise<void> {
+    this.scanBusy.set(true);
+    this.scanError.set(null);
+    this.scanStatus.set(null);
+    this.scanDraft.set([]);
+    this.scanProgress.set(this.t()("army.scan.busy"));
+    try {
+      const result = await scanTroopScreenshot(file, {
+        guardsMaxTier: this.maxTier(),
+        monstersMaxTier: this.maxTierM(),
+        onProgress: (message) => this.scanProgress.set(message),
+      });
+      if (!result.hits.length) {
+        this.scanStatus.set(this.t()("army.scan.empty"));
+        return;
+      }
+      this.scanDraft.set(
+        result.hits.map((hit) => ({
+          hit,
+          count: hit.count ?? 0,
+          include: hit.count != null && hit.count > 0,
+        })),
+      );
+      this.scanStatus.set(
+        this.t()("army.scan.done", undefined, {
+          n: String(result.hits.length),
+          ms: String(result.durationMs),
+        }),
+      );
+    } catch (err) {
+      console.error(err);
+      this.scanError.set(this.t()("army.scan.error"));
+    } finally {
+      this.scanBusy.set(false);
+      this.scanProgress.set("");
+    }
+  }
+
+  protected setScanCount(index: number, value: string | number): void {
+    const n = this.parseAmount(value);
+    this.scanDraft.update((rows) =>
+      rows.map((row, i) =>
+        i === index ? { ...row, count: n, include: n > 0 } : row,
+      ),
+    );
+  }
+
+  protected toggleScanRow(index: number, include: boolean): void {
+    this.scanDraft.update((rows) =>
+      rows.map((row, i) => (i === index ? { ...row, include } : row)),
+    );
+  }
+
+  protected cancelScanDraft(): void {
+    this.scanDraft.set([]);
+    this.scanStatus.set(null);
+    this.scanError.set(null);
+  }
+
+  protected applyScanDraft(): void {
+    const rows = this.scanDraft().filter((r) => r.include && r.count >= 0);
+    if (!rows.length) {
+      this.cancelScanDraft();
+      return;
+    }
+
+    this.current.update((grid) => {
+      const next = cloneGrid(grid, this.tiers());
+      for (const row of rows) {
+        if (row.hit.ref.kind !== "guards") continue;
+        if (!isArmyType(row.hit.ref.key)) continue;
+        const tier = row.hit.ref.tier;
+        if (!next[tier] || !isTypeAvailable(row.hit.ref.key, tier)) continue;
+        next[tier][row.hit.ref.key] = row.count;
+      }
+      return next;
+    });
+
+    this.currentMonsters.update((grid) => {
+      const next = cloneMonsterGrid(grid, this.monsterTiers());
+      for (const row of rows) {
+        if (row.hit.ref.kind !== "monsters") continue;
+        if (!isMonsterRace(row.hit.ref.key)) continue;
+        const tier = row.hit.ref.tier;
+        if (!next[tier]) continue;
+        next[tier][row.hit.ref.key] = row.count;
+      }
+      return next;
+    });
+
+    this.cancelScanDraft();
   }
 
   protected toggleHint(key: string, event: Event): void {

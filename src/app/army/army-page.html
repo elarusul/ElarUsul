@@ -91,6 +91,70 @@
   </div>
   </div>
 
+  <div class="panel scan-panel">
+    <div class="scan-bar">
+      <div class="scan-copy">
+        <strong>{{ t()('army.scan') }}</strong>
+        <span>{{ t()('army.scan.hint') }}</span>
+      </div>
+      <button
+        type="button"
+        class="linkish scan-btn"
+        [disabled]="scanBusy()"
+        (click)="openScanPicker()"
+      >
+        {{ scanBusy() ? t()('army.scan.busy') : t()('army.scan') }}
+      </button>
+    </div>
+    @if (scanProgress()) {
+      <p class="scan-progress">{{ scanProgress() }}</p>
+    }
+    @if (scanError()) {
+      <p class="scan-error">{{ scanError() }}</p>
+    }
+    @if (scanStatus()) {
+      <p class="scan-status">{{ scanStatus() }}</p>
+    }
+    @if (scanDraft().length) {
+      <div class="scan-draft">
+        <div class="scan-draft-list">
+          @for (row of scanDraft(); track row.hit.ref.label; let i = $index) {
+            <label class="scan-row" [class.off]="!row.include">
+              <input
+                type="checkbox"
+                [checked]="row.include"
+                (change)="toggleScanRow(i, $any($event.target).checked)"
+              />
+              <img [src]="row.hit.previewUrl" [alt]="row.hit.ref.label" width="40" height="40" />
+              <span class="scan-meta">
+                <span class="scan-label">{{ row.hit.ref.label }}</span>
+                <span class="scan-ocr">
+                  @if (row.hit.count == null) {
+                    {{ t()('army.scan.ocrFail') }}
+                  } @else {
+                    OCR: {{ row.hit.ocrText || row.hit.count }}
+                  }
+                </span>
+              </span>
+              <input
+                type="number"
+                min="0"
+                [ngModel]="row.count"
+                (ngModelChange)="setScanCount(i, $event)"
+                (focus)="selectOnFocus($event)"
+                [name]="'scan-' + i"
+              />
+            </label>
+          }
+        </div>
+        <div class="scan-actions">
+          <button type="button" class="linkish" (click)="applyScanDraft()">{{ t()('army.scan.apply') }}</button>
+          <button type="button" class="linkish" (click)="cancelScanDraft()">{{ t()('army.scan.cancel') }}</button>
+        </div>
+      </div>
+    }
+  </div>
+
   <div class="board">
     <div class="board-row">
     <article class="panel block target">
