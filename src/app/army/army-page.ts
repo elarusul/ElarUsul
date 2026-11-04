@@ -496,6 +496,7 @@ export class ArmyPage {
       return;
     }
 
+    // Na razie skaner obsługuje tylko gwardię (bez potworów).
     const guards = hits.filter(
       (h): h is TroopScanHit & { type: ArmyType } =>
         h.kind === "guards" &&
@@ -503,36 +504,14 @@ export class ArmyPage {
         h.tier <= GUARDS_MAX_TIER &&
         isTypeAvailable(h.type, h.tier),
     );
-    const monsters = hits.filter(
-      (h): h is TroopScanHit & { race: MonsterRace } =>
-        h.kind === "monster" &&
-        !!h.race &&
-        h.tier >= MONSTER_MIN_TIER &&
-        h.tier <= MONSTER_PLAN_MAX_TIER,
-    );
 
     const needG = Math.min(
       GUARDS_MAX_TIER,
       Math.max(this.maxTier(), ...guards.map((h) => h.tier), 1),
     );
-    const needM = Math.min(
-      MONSTER_PLAN_MAX_TIER,
-      Math.max(
-        this.maxTierM(),
-        ...monsters.map((h) => h.tier),
-        MONSTER_MIN_TIER,
-      ),
-    );
 
-    // Rozszerz siatki synchronicznie w tym samym update — bez czekania na effect.
     const guardTiers = Array.from({ length: needG }, (_, i) => i + 1);
-    const monsterTiers = Array.from(
-      { length: Math.max(0, needM - 2) },
-      (_, i) => i + 3,
-    );
-
     if (needG !== this.maxTier()) this.maxTier.set(needG);
-    if (needM !== this.maxTierM()) this.maxTierM.set(needM);
 
     let written = 0;
     this.current.update((grid) => {
@@ -540,15 +519,6 @@ export class ArmyPage {
       for (const hit of guards) {
         if (!next[hit.tier]) next[hit.tier] = emptyRow();
         next[hit.tier][hit.type] = hit.count;
-        written++;
-      }
-      return next;
-    });
-    this.currentMonsters.update((grid) => {
-      const next = cloneMonsterGrid(grid, monsterTiers);
-      for (const hit of monsters) {
-        if (!next[hit.tier]) next[hit.tier] = emptyMonsterRow();
-        next[hit.tier][hit.race] = hit.count;
         written++;
       }
       return next;
