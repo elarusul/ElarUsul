@@ -95,7 +95,9 @@
     <div class="scan-head">
       <div class="scan-copy">
         <h2>{{ t()('army.scan') }}</h2>
-        <p class="scan-hint">{{ t()('army.scan.hint') }}</p>
+        @if (t()('army.scan.hint')) {
+          <p class="scan-hint">{{ t()('army.scan.hint') }}</p>
+        }
       </div>
       <div class="scan-controls">
         <label

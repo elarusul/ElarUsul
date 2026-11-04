@@ -111,8 +111,7 @@ export const UI_PL: Dict = {
     'Do wydania: <strong>%silver%</strong> srebra + <strong>%coins%</strong> smoczych monet',
   'army.info': 'Info',
   'army.scan': 'Wczytaj ilość wojska ze screenshotów',
-  'army.scan.hint':
-    'Wrzuć screeny listy wojsk - rozpoznane ilości automatycznie uzupełnią kolumnę Aktualny stan wojska.',
+  'army.scan.hint': '',
   'army.scan.drop': 'Wybierz screeny',
   'army.scan.scanning': 'Skanowanie…',
   'army.scan.apply': 'Wpisz do Aktualny stan wojska',
@@ -233,8 +232,7 @@ export const UI_EN: Dict = {
     'To spend: <strong>%silver%</strong> silver + <strong>%coins%</strong> dragon coins',
   'army.info': 'Info',
   'army.scan': 'Load troop counts from screenshots',
-  'army.scan.hint':
-    'Drop troop list screenshots - recognized amounts will fill the Current troop state column.',
+  'army.scan.hint': '',
   'army.scan.drop': 'Choose screenshots',
   'army.scan.scanning': 'Scanning…',
   'army.scan.apply': 'Fill Current troop state',
