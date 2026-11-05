@@ -179,58 +179,6 @@
 
   <div class="board">
     <div class="board-row">
-    <article class="panel block target">
-      <h2>
-        {{ t()('army.target') }}
-        @if (attacks() !== 1) {
-          <span class="attacks-badge">×{{ attacks() }}</span>
-        }
-      </h2>
-      <div class="table-wrap">
-        <table>
-          <thead>
-            <tr>
-              <th></th>
-              @for (type of types; track type) {
-                <th>
-                  <span class="th-pl">{{ typeLabel(type) }}</span>
-                  @if (i18n.lang() === 'pl') {
-                    <span class="th-en">{{ typeLabelEn(type) }}</span>
-                  }
-                </th>
-              }
-            </tr>
-          </thead>
-          <tbody>
-            @for (tier of tiers(); track tier) {
-              <tr>
-                <th>G{{ tier }}</th>
-                @for (type of types; track type) {
-                  <td [class.locked]="!available(type, tier)">
-                    @if (available(type, tier)) {
-                      <span class="cell-with-icon">
-                        <img class="troop-icon sm" [src]="guardsTierIcon(type, tier)" [alt]="typeLabel(type)" width="36" height="36" />
-                        <span>{{ targets()[tier][type] | number: '1.0-0' }}</span>
-                      </span>
-                    } @else {
-                      -
-                    }
-                  </td>
-                }
-              </tr>
-            }
-          </tbody>
-        </table>
-      </div>
-      <p class="foot">
-        {{ t()('army.capUsed') }} <strong>{{ neededLeadership() | number: '1.0-0' }}</strong>
-        @if (attacks() !== 1) {
-          <span class="muted"> ({{ plan().leadershipUsed | number: '1.0-0' }} × {{ attacks() }})</span>
-        }
-        / {{ targetCapacity() | number: '1.0-0' }}
-      </p>
-    </article>
-
     <article class="panel block current">
       <h2>
         {{ t()('army.current') }}
@@ -333,12 +281,10 @@
       </div>
       <p class="foot muted">{{ t()('army.buyHint') }}</p>
     </article>
-    </div>
 
-    <div class="board-row">
     <article class="panel block target">
       <h2>
-        {{ t()('army.monsterTarget') }}
+        {{ t()('army.target') }}
         @if (attacks() !== 1) {
           <span class="attacks-badge">×{{ attacks() }}</span>
         }
@@ -348,28 +294,27 @@
           <thead>
             <tr>
               <th></th>
-              @for (race of monsterRaces; track race) {
+              @for (type of types; track type) {
                 <th>
-                  <span class="th-pl">{{ raceLabel(race) }}</span>
+                  <span class="th-pl">{{ typeLabel(type) }}</span>
                   @if (i18n.lang() === 'pl') {
-                    <span class="th-en">{{ raceLabelEn(race) }}</span>
+                    <span class="th-en">{{ typeLabelEn(type) }}</span>
                   }
                 </th>
               }
             </tr>
           </thead>
           <tbody>
-            @for (tier of monsterTiers(); track tier) {
+            @for (tier of tiers(); track tier) {
               <tr>
-                <th>M{{ tier }}</th>
-                @for (race of monsterRaces; track race) {
-                  <td [class.locked]="!raceEnabled(race)">
-                    @if (raceEnabled(race)) {
+                <th>G{{ tier }}</th>
+                @for (type of types; track type) {
+                  <td [class.locked]="!available(type, tier)">
+                    @if (available(type, tier)) {
                       <span class="cell-with-icon">
-                        <img class="troop-icon sm" [src]="monsterTierIcon(race, tier)" [alt]="monsterName(tier, race)" width="36" height="36" />
-                        <span>{{ monsterTargets()[tier][race] | number: '1.0-0' }}</span>
+                        <img class="troop-icon sm" [src]="guardsTierIcon(type, tier)" [alt]="typeLabel(type)" width="36" height="36" />
+                        <span>{{ targets()[tier][type] | number: '1.0-0' }}</span>
                       </span>
-                      <small class="cell-meta">{{ monsterName(tier, race) }}</small>
                     } @else {
                       -
                     }
@@ -381,14 +326,16 @@
         </table>
       </div>
       <p class="foot">
-        {{ t()('army.domUsed') }} <strong>{{ neededDominance() | number: '1.0-0' }}</strong>
+        {{ t()('army.capUsed') }} <strong>{{ neededLeadership() | number: '1.0-0' }}</strong>
         @if (attacks() !== 1) {
-          <span class="muted"> ({{ monsterPlan().dominanceUsed | number: '1.0-0' }} × {{ attacks() }})</span>
+          <span class="muted"> ({{ plan().leadershipUsed | number: '1.0-0' }} × {{ attacks() }})</span>
         }
-        / {{ dominance() | number: '1.0-0' }}
+        / {{ targetCapacity() | number: '1.0-0' }}
       </p>
     </article>
+    </div>
 
+    <div class="board-row">
     <article class="panel block current">
       <h2>
         {{ t()('army.monsterCurrent') }}
@@ -490,6 +437,59 @@
         </table>
       </div>
       <p class="foot muted">{{ t()('army.monsterBuyHint') }}</p>
+    </article>
+
+    <article class="panel block target">
+      <h2>
+        {{ t()('army.monsterTarget') }}
+        @if (attacks() !== 1) {
+          <span class="attacks-badge">×{{ attacks() }}</span>
+        }
+      </h2>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th></th>
+              @for (race of monsterRaces; track race) {
+                <th>
+                  <span class="th-pl">{{ raceLabel(race) }}</span>
+                  @if (i18n.lang() === 'pl') {
+                    <span class="th-en">{{ raceLabelEn(race) }}</span>
+                  }
+                </th>
+              }
+            </tr>
+          </thead>
+          <tbody>
+            @for (tier of monsterTiers(); track tier) {
+              <tr>
+                <th>M{{ tier }}</th>
+                @for (race of monsterRaces; track race) {
+                  <td [class.locked]="!raceEnabled(race)">
+                    @if (raceEnabled(race)) {
+                      <span class="cell-with-icon">
+                        <img class="troop-icon sm" [src]="monsterTierIcon(race, tier)" [alt]="monsterName(tier, race)" width="36" height="36" />
+                        <span>{{ monsterTargets()[tier][race] | number: '1.0-0' }}</span>
+                      </span>
+                      <small class="cell-meta">{{ monsterName(tier, race) }}</small>
+                    } @else {
+                      -
+                    }
+                  </td>
+                }
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+      <p class="foot">
+        {{ t()('army.domUsed') }} <strong>{{ neededDominance() | number: '1.0-0' }}</strong>
+        @if (attacks() !== 1) {
+          <span class="muted"> ({{ monsterPlan().dominanceUsed | number: '1.0-0' }} × {{ attacks() }})</span>
+        }
+        / {{ dominance() | number: '1.0-0' }}
+      </p>
     </article>
     </div>
   </div>
