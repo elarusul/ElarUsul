@@ -10,6 +10,8 @@
   --army-side: 1.5rem;
   --army-icon: 2.35rem;
   --army-icon-sm: 2.2rem;
+  /* ~5 tabular digits visible in troop count inputs */
+  --army-count-digits: 5.75ch;
   box-sizing: border-box;
   width: min(var(--army-max), calc(100% - var(--army-side) * 2));
   margin: 0 auto;
@@ -362,7 +364,9 @@ table input {
 
 .board-row > .block > .table-wrap {
   min-height: 0;
+  min-width: 0;
   align-self: stretch;
+  overflow-x: auto;
 }
 
 .board-row > .block > .foot {
@@ -758,14 +762,15 @@ table input {
 }
 
 .cell-with-icon input {
-  flex: 1 1 auto;
-  min-width: 0;
-  width: auto;
+  flex: 1 1 var(--army-count-digits, 5.75ch);
+  min-width: var(--army-count-digits, 5.75ch);
+  width: var(--army-count-digits, 5.75ch);
   max-width: 100%;
   height: var(--ui-control-h, 1.75rem);
   box-sizing: border-box;
   padding: 0 0.25rem;
   line-height: 1.2;
+  font-variant-numeric: tabular-nums;
 }
 
 .block.target td,
@@ -787,6 +792,7 @@ table input {
 .block.current table td:not(:first-child) {
   padding-left: 3px;
   padding-right: 3px;
+  min-width: calc(var(--army-icon-sm, 2.2rem) + var(--army-count-digits, 5.75ch) + 0.9rem);
 }
 
 .block.current .cell-with-icon {
@@ -795,6 +801,7 @@ table input {
   gap: 0.35rem;
   height: auto;
   min-height: calc(var(--army-icon-sm, 2.2rem) + 0.35rem);
+  min-width: calc(var(--army-icon-sm, 2.2rem) + var(--army-count-digits, 5.75ch) + 0.7rem);
   padding: 0.2rem 0.35rem 0.2rem 0.2rem;
   border: 1px solid #c4a882;
   border-radius: 0.5rem;
@@ -812,18 +819,20 @@ table input {
 }
 
 .block.current .cell-with-icon input {
-  flex: 1 1 0;
+  flex: 1 0 var(--army-count-digits, 5.75ch);
   order: 1;
-  min-width: 0;
-  max-width: 100%;
+  min-width: var(--army-count-digits, 5.75ch);
+  width: var(--army-count-digits, 5.75ch);
+  max-width: none;
   height: var(--army-icon-sm, 2.2rem);
   min-height: var(--army-icon-sm, 2.2rem);
-  padding: 0 2px;
+  padding: 0 0.15rem;
   border: 0;
   border-radius: 0;
   background: transparent;
   box-shadow: none;
   font-size: 0.8rem;
+  font-variant-numeric: tabular-nums;
 }
 
 .block.current .cell-with-icon input:focus {
@@ -872,8 +881,23 @@ td {
   line-height: var(--ui-control-h, 1.75rem);
 }
 
-.block.current td {
-  overflow: hidden;
+.board-row .block.current table tbody td,
+.board-row .block.target table tbody td,
+.board-row .block.buy table tbody td {
+  overflow: visible;
+}
+
+/* Spinners zjadają miejsce na cyfry — liczby wpisujemy z klawiatury. */
+table input[type='number'] {
+  appearance: textfield;
+  -moz-appearance: textfield;
+}
+
+table input[type='number']::-webkit-outer-spin-button,
+table input[type='number']::-webkit-inner-spin-button {
+  appearance: none;
+  -webkit-appearance: none;
+  margin: 0;
 }
 
 th:first-child,
@@ -896,15 +920,21 @@ thead th {
 }
 
 table input {
-  min-width: 0;
+  min-width: var(--army-count-digits, 5.75ch);
   padding: 2px 3px;
   font-size: 0.78rem;
   border-radius: 5px;
+  font-variant-numeric: tabular-nums;
 }
 
 .cell-with-icon input {
   padding: 0 4px;
   font-size: 0.78rem;
+}
+
+.block.target table td:not(:first-child),
+.block.buy table td:not(:first-child) {
+  min-width: calc(var(--army-icon-sm, 2.2rem) + var(--army-count-digits, 5.75ch) + 0.75rem);
 }
 
 .board-row .linkish {
