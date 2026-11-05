@@ -165,6 +165,24 @@ export function subtractGrids(
   return out;
 }
 
+/** Multiply troop counts (e.g. N attacks). Non-finite or below 1 → treat as 1. */
+export function scaleGrid(
+  grid: ArmyGrid,
+  tiers: number[],
+  factor: number,
+): ArmyGrid {
+  const n = Number.isFinite(factor) ? Math.max(1, Math.round(factor)) : 1;
+  if (n === 1) return grid;
+  const out: ArmyGrid = {};
+  for (const tier of tiers) {
+    out[tier] = emptyRow();
+    for (const type of ARMY_TYPES) {
+      out[tier][type] = (grid[tier]?.[type] ?? 0) * n;
+    }
+  }
+  return out;
+}
+
 export function silverForGrid(
   counts: ArmyGrid,
   rates: ArmyGrid,
@@ -290,6 +308,22 @@ export function subtractMonsterGrids(
         0,
         (targets[tier]?.[race] ?? 0) - (current[tier]?.[race] ?? 0),
       );
+    }
+  }
+  return out;
+}
+
+export function scaleMonsterGrid(
+  grid: MonsterGrid,
+  tiers: number[],
+  factor: number,
+): MonsterGrid {
+  const n = Number.isFinite(factor) ? Math.max(1, Math.round(factor)) : 1;
+  if (n === 1) return grid;
+  const out = emptyMonsterGrid(tiers);
+  for (const tier of tiers) {
+    for (const race of MONSTER_RACES) {
+      out[tier][race] = (grid[tier]?.[race] ?? 0) * n;
     }
   }
   return out;

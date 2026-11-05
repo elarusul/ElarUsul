@@ -26,6 +26,8 @@ export interface ArmyPersistedState {
   v: number;
   targetCapacity: number;
   dominance: number;
+  /** How many identical marches/attacks to prepare for (multiplies targets). */
+  attacks: number;
   maxTier: number;
   maxTierS: number;
   maxTierM: number;
@@ -63,6 +65,7 @@ export function defaultArmyState(): ArmyPersistedState {
     v: STORAGE_VERSION,
     targetCapacity: 0,
     dominance: 0,
+    attacks: 1,
     maxTier: 5,
     maxTierS: 5,
     maxTierM: 4,
@@ -195,6 +198,10 @@ export function loadArmyState(): ArmyPersistedState {
       v: STORAGE_VERSION,
       targetCapacity: Math.max(0, asFiniteNumber(parsed.targetCapacity, defaults.targetCapacity)),
       dominance: Math.max(0, asFiniteNumber(parsed.dominance, defaults.dominance)),
+      attacks: Math.max(
+        1,
+        Math.min(99, Math.round(asFiniteNumber(parsed.attacks, defaults.attacks))),
+      ),
       maxTier: Math.max(
         1,
         Math.min(

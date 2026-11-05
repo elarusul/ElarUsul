@@ -87,6 +87,27 @@
         name="maxTierM"
       />
     </label>
+
+    <label class="tool tool-tier">
+      <span class="label-row">
+        {{ t()('army.attacks') }}
+        <button type="button" class="info" [class.is-open]="openHint() === 'attacks'" [attr.aria-label]="t()('army.info')" (click)="toggleHint('attacks', $event)">i</button>
+      </span>
+      @if (openHint() === 'attacks') {
+        <span class="tip" (click)="$event.stopPropagation()">
+          <strong>{{ t()('army.attacks.tipTitle') }}</strong>
+          {{ t()('army.attacks.tip') }}
+        </span>
+      }
+      <input
+        type="number"
+        min="1"
+        max="99"
+        [ngModel]="attacks()"
+        (ngModelChange)="setAttacks($event)"
+        name="attacks"
+      />
+    </label>
     </div>
   </div>
   </div>
@@ -158,7 +179,12 @@
   <div class="board">
     <div class="board-row">
     <article class="panel block target">
-      <h2>{{ t()('army.target') }}</h2>
+      <h2>
+        {{ t()('army.target') }}
+        @if (attacks() > 1) {
+          <span class="attacks-badge">×{{ attacks() }}</span>
+        }
+      </h2>
       <div class="table-wrap">
         <table>
           <thead>
@@ -196,7 +222,10 @@
         </table>
       </div>
       <p class="foot">
-        {{ t()('army.capUsed') }} <strong>{{ plan().leadershipUsed | number: '1.0-0' }}</strong>
+        {{ t()('army.capUsed') }} <strong>{{ neededLeadership() | number: '1.0-0' }}</strong>
+        @if (attacks() > 1) {
+          <span class="muted"> ({{ plan().leadershipUsed | number: '1.0-0' }} × {{ attacks() }})</span>
+        }
         / {{ targetCapacity() | number: '1.0-0' }}
       </p>
     </article>
@@ -256,7 +285,12 @@
     </article>
 
     <article class="panel block buy">
-      <h2>{{ t()('army.buy') }}</h2>
+      <h2>
+        {{ t()('army.buy') }}
+        @if (attacks() > 1) {
+          <span class="attacks-badge">×{{ attacks() }}</span>
+        }
+      </h2>
       <div class="table-wrap">
         <table>
           <thead>
@@ -302,7 +336,12 @@
 
     <div class="board-row">
     <article class="panel block target">
-      <h2>{{ t()('army.monsterTarget') }}</h2>
+      <h2>
+        {{ t()('army.monsterTarget') }}
+        @if (attacks() > 1) {
+          <span class="attacks-badge">×{{ attacks() }}</span>
+        }
+      </h2>
       <div class="table-wrap">
         <table>
           <thead>
@@ -341,7 +380,10 @@
         </table>
       </div>
       <p class="foot">
-        {{ t()('army.domUsed') }} <strong>{{ monsterPlan().dominanceUsed | number: '1.0-0' }}</strong>
+        {{ t()('army.domUsed') }} <strong>{{ neededDominance() | number: '1.0-0' }}</strong>
+        @if (attacks() > 1) {
+          <span class="muted"> ({{ monsterPlan().dominanceUsed | number: '1.0-0' }} × {{ attacks() }})</span>
+        }
         / {{ dominance() | number: '1.0-0' }}
       </p>
     </article>
@@ -401,7 +443,12 @@
     </article>
 
     <article class="panel block buy">
-      <h2>{{ t()('army.monsterBuy') }}</h2>
+      <h2>
+        {{ t()('army.monsterBuy') }}
+        @if (attacks() > 1) {
+          <span class="attacks-badge">×{{ attacks() }}</span>
+        }
+      </h2>
       <div class="table-wrap">
         <table>
           <thead>

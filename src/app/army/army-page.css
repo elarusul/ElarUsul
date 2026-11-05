@@ -132,10 +132,10 @@
 .tool {
   position: relative;
   display: flex;
-  flex: 1 1 0;
+  flex: 1 1 7.5rem;
   flex-direction: column;
   gap: 4px;
-  min-width: 0;
+  min-width: 7.5rem;
   color: #6d5336;
   font-size: 0.7rem;
   letter-spacing: 0.04em;
@@ -143,13 +143,13 @@
 }
 
 .tool-wide {
-  flex: 1.35 1 0;
-  min-width: 0;
+  flex: 1.35 1 9rem;
+  min-width: 9rem;
 }
 
 .tool-tier {
-  flex: 0.85 1 0;
-  min-width: 0;
+  flex: 0.85 1 7.5rem;
+  min-width: 7.5rem;
   max-width: none;
 }
 
@@ -639,10 +639,27 @@ table input {
   display: flex;
   align-items: center;
   flex-wrap: wrap;
+  gap: 0.35rem 0.5rem;
   margin: 0 0 8px;
   color: #3c2918;
   font-size: 0.92rem;
   font-weight: 600;
+}
+
+.attacks-badge {
+  display: inline-block;
+  padding: 0.1rem 0.4rem;
+  border-radius: 0.25rem;
+  background: #1f6fd8;
+  color: #fff;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  line-height: 1.2;
+}
+
+.block.buy .attacks-badge {
+  background: #b77e63;
 }
 
 /* Delikatne kolorowe tła + ramka w tym samym tonie */
@@ -920,7 +937,8 @@ tbody th {
   font-size: 0.82rem;
 }
 
-.foot.muted {
+.foot.muted,
+.foot .muted {
   color: #6d5336;
 }
 
@@ -956,14 +974,14 @@ tbody th {
   }
 }
 
-/* Telefon: 2×2 zamiast jednego rzędu, który wypychał Max Tier M. */
+/* Telefon: siatka 2 kolumny (5. pole = Liczba ataków w 3. rzędzie). */
 @media (max-width: 720px) {
   .setup-row,
   .setup-row > .toolbar,
   .tools-row {
     max-width: 100%;
     min-width: 0;
-    overflow-x: clip;
+    overflow: visible;
   }
 
   .tools-row {

@@ -29,6 +29,8 @@ import {
   monsterGridTotals,
   planArmyTargets,
   planMonsterTargets,
+  scaleGrid,
+  scaleMonsterGrid,
   silverForGrid,
   subtractGrids,
   subtractMonsterGrids,
@@ -146,6 +148,9 @@ export class ArmyPage {
 
   protected readonly targetCapacity = signal(SAVED.targetCapacity);
   protected readonly dominance = signal(SAVED.dominance);
+  protected readonly attacks = signal(
+    Math.min(99, Math.max(1, Math.round(SAVED.attacks ?? 1))),
+  );
   protected readonly maxTier = signal(
     Math.min(GUARDS_MAX_TIER, Math.max(1, SAVED.maxTier)),
   );
@@ -258,6 +263,7 @@ export class ArmyPage {
         v: 2,
         targetCapacity: this.targetCapacity(),
         dominance: this.dominance(),
+        attacks: this.attacks(),
         maxTier: this.maxTier(),
         maxTierS: this.maxTierS(),
         maxTierM: this.maxTierM(),
@@ -312,8 +318,23 @@ export class ArmyPage {
     return next;
   }
 
-  protected readonly targets = computed(() => this.plan().targets);
-  protected readonly monsterTargets = computed(() => this.monsterPlan().targets);
+  /** Single-march composition from capacity / dominance. */
+  protected readonly marchTargets = computed(() => this.plan().targets);
+  protected readonly marchMonsterTargets = computed(
+    () => this.monsterPlan().targets,
+  );
+
+  /** Targets × attacks — stockpile needed for N identical marches. */
+  protected readonly targets = computed(() =>
+    scaleGrid(this.marchTargets(), this.tiers(), this.attacks()),
+  );
+  protected readonly monsterTargets = computed(() =>
+    scaleMonsterGrid(
+      this.marchMonsterTargets(),
+      this.monsterTiers(),
+      this.attacks(),
+    ),
+  );
 
   protected readonly targetTotals = computed(() =>
     gridTotals(this.targets(), this.tiers()),
@@ -333,6 +354,14 @@ export class ArmyPage {
       this.currentMonsters(),
       this.monsterTiers(),
     ),
+  );
+
+  protected readonly neededLeadership = computed(
+    () => this.plan().leadershipUsed * this.attacks(),
+  );
+
+  protected readonly neededDominance = computed(
+    () => this.monsterPlan().dominanceUsed * this.attacks(),
   );
 
   protected readonly toBuyTotals = computed(() =>
@@ -451,6 +480,11 @@ export class ArmyPage {
     this.maxTierM.set(
       Math.min(MONSTER_PLAN_MAX_TIER, Math.max(MONSTER_MIN_TIER, n)),
     );
+  }
+
+  protected setAttacks(value: string | number): void {
+    const n = this.parseAmount(value);
+    this.attacks.set(Math.min(99, Math.max(1, n || 1)));
   }
 
   /** Zaznacza wartosc przy focusie, zeby wpisanie cyfry nadpisalo np. 0. */

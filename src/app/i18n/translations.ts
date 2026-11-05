@@ -35,6 +35,10 @@ export const UI_PL: Dict = {
   'army.dominance.tipTitle': 'Dominance',
   'army.dominance.tip':
     'Limit potworów w marszu (osobna pula od Leadership). Weź wartość z ekranu marszu po wyborze kapitana.',
+  'army.attacks': 'Liczba ataków',
+  'army.attacks.tipTitle': 'Liczba ataków',
+  'army.attacks.tip':
+    'Ile identycznych marszów planujesz. Docelowe ilości i „do dokupienia” są mnożone przez tę liczbę (stan aktualny bez zmian). Pojemność / Dominance nadal dotyczą jednego marszu.',
   'army.tier': 'Max tier G',
   'army.tier.tipTitle': 'Max tier G',
   'army.tier.tip':
@@ -154,6 +158,10 @@ export const UI_EN: Dict = {
   'army.dominance.tipTitle': 'Dominance',
   'army.dominance.tip':
     'Monster march limit (separate from Leadership). Take the value from the march screen after picking a captain.',
+  'army.attacks': 'Attacks',
+  'army.attacks.tipTitle': 'Attacks',
+  'army.attacks.tip':
+    'How many identical marches you plan. Target amounts and “to buy” are multiplied by this number (current stock stays as entered). Capacity / Dominance still describe a single march.',
   'army.tier': 'Max tier G',
   'army.tier.tipTitle': 'Max tier G',
   'army.tier.tip':
