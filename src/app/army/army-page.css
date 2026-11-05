@@ -743,6 +743,7 @@ table input {
 .th-with-icon,
 .cell-with-icon {
   display: flex;
+  flex-wrap: nowrap;
   align-items: center;
   justify-content: flex-end;
   gap: 0.35rem;
@@ -771,8 +772,11 @@ table input {
 
 .cell-with-icon > span {
   display: inline-flex;
+  flex: 0 0 auto;
   align-items: center;
   line-height: 1;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
 }
 
 .cell-with-icon input {
@@ -873,7 +877,8 @@ td {
   text-align: right;
   overflow: hidden;
   text-overflow: ellipsis;
-  word-break: break-word;
+  word-break: normal;
+  overflow-wrap: normal;
   vertical-align: middle;
 }
 
@@ -949,6 +954,13 @@ table input {
 .block.target table td:not(:first-child),
 .block.buy table td:not(:first-child) {
   min-width: calc(var(--army-icon-sm, 2.2rem) + var(--army-count-digits, 5.75ch) + 0.75rem);
+  white-space: nowrap;
+}
+
+.block.target .cell-with-icon,
+.block.buy .cell-with-icon,
+.block.current .cell-with-icon {
+  white-space: nowrap;
 }
 
 .board-row .linkish {
@@ -1008,7 +1020,32 @@ tbody th {
   }
 }
 
+/* Wąski desktop / tablet: 3 kolumny panelów — nie miażdż komórek, przewijaj w poziomie. */
+@media (max-width: 1400px) {
+  .board-row > .block > .table-wrap {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .board-row table {
+    table-layout: auto;
+    width: max-content;
+    min-width: 100%;
+  }
+
+  .board-row table thead th:not(:first-child),
+  .board-row table tbody td:not(:first-child) {
+    white-space: nowrap;
+  }
+}
+
 @media (max-width: 960px) {
+  .army {
+    --army-icon: 1.85rem;
+    --army-icon-sm: 1.7rem;
+    --army-count-digits: 5.5ch;
+  }
+
   .board-row {
     grid-template-columns: 1fr;
     grid-template-rows: none;
@@ -1017,6 +1054,26 @@ tbody th {
   .board-row > .block {
     display: block;
     grid-row: auto;
+  }
+
+  .board-row table thead th:not(:first-child),
+  .board-row table tbody td:not(:first-child) {
+    min-width: calc(var(--army-icon-sm, 1.7rem) + var(--army-count-digits, 5.5ch) + 0.85rem);
+  }
+
+  .board-row table tbody th,
+  .board-row table tbody td {
+    height: auto;
+    min-height: 2.6rem;
+    overflow: visible;
+  }
+
+  .cell-with-icon {
+    min-width: calc(var(--army-icon-sm, 1.7rem) + var(--army-count-digits, 5.5ch) + 0.55rem);
+  }
+
+  .block.current .cell-with-icon {
+    min-width: calc(var(--army-icon-sm, 1.7rem) + var(--army-count-digits, 5.5ch) + 0.7rem);
   }
 }
 
