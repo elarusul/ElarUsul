@@ -165,19 +165,29 @@ export function subtractGrids(
   return out;
 }
 
-/** Multiply troop counts (e.g. N attacks). Non-finite or below 1 → treat as 1. */
+/**
+ * Attacks multiplier: half-steps from 0.5 … 99 (e.g. 0.5 = half a march).
+ * Invalid / non-positive → fallback (default 1).
+ */
+export function normalizeAttacks(factor: number, fallback = 1): number {
+  if (!Number.isFinite(factor) || factor <= 0) return fallback;
+  const snapped = Math.round(factor * 2) / 2;
+  return Math.min(99, Math.max(0.5, snapped));
+}
+
+/** Multiply troop counts (e.g. N attacks). Allows 0.5; rounds each cell to an integer. */
 export function scaleGrid(
   grid: ArmyGrid,
   tiers: number[],
   factor: number,
 ): ArmyGrid {
-  const n = Number.isFinite(factor) ? Math.max(1, Math.round(factor)) : 1;
+  const n = normalizeAttacks(factor, 1);
   if (n === 1) return grid;
   const out: ArmyGrid = {};
   for (const tier of tiers) {
     out[tier] = emptyRow();
     for (const type of ARMY_TYPES) {
-      out[tier][type] = (grid[tier]?.[type] ?? 0) * n;
+      out[tier][type] = Math.round((grid[tier]?.[type] ?? 0) * n);
     }
   }
   return out;
@@ -318,12 +328,12 @@ export function scaleMonsterGrid(
   tiers: number[],
   factor: number,
 ): MonsterGrid {
-  const n = Number.isFinite(factor) ? Math.max(1, Math.round(factor)) : 1;
+  const n = normalizeAttacks(factor, 1);
   if (n === 1) return grid;
   const out = emptyMonsterGrid(tiers);
   for (const tier of tiers) {
     for (const race of MONSTER_RACES) {
-      out[tier][race] = (grid[tier]?.[race] ?? 0) * n;
+      out[tier][race] = Math.round((grid[tier]?.[race] ?? 0) * n);
     }
   }
   return out;

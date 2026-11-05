@@ -101,8 +101,9 @@
       }
       <input
         type="number"
-        min="1"
+        min="0.5"
         max="99"
+        step="0.5"
         [ngModel]="attacks()"
         (ngModelChange)="setAttacks($event)"
         name="attacks"
@@ -181,7 +182,7 @@
     <article class="panel block target">
       <h2>
         {{ t()('army.target') }}
-        @if (attacks() > 1) {
+        @if (attacks() !== 1) {
           <span class="attacks-badge">×{{ attacks() }}</span>
         }
       </h2>
@@ -223,7 +224,7 @@
       </div>
       <p class="foot">
         {{ t()('army.capUsed') }} <strong>{{ neededLeadership() | number: '1.0-0' }}</strong>
-        @if (attacks() > 1) {
+        @if (attacks() !== 1) {
           <span class="muted"> ({{ plan().leadershipUsed | number: '1.0-0' }} × {{ attacks() }})</span>
         }
         / {{ targetCapacity() | number: '1.0-0' }}
@@ -287,7 +288,7 @@
     <article class="panel block buy">
       <h2>
         {{ t()('army.buy') }}
-        @if (attacks() > 1) {
+        @if (attacks() !== 1) {
           <span class="attacks-badge">×{{ attacks() }}</span>
         }
       </h2>
@@ -338,7 +339,7 @@
     <article class="panel block target">
       <h2>
         {{ t()('army.monsterTarget') }}
-        @if (attacks() > 1) {
+        @if (attacks() !== 1) {
           <span class="attacks-badge">×{{ attacks() }}</span>
         }
       </h2>
@@ -381,7 +382,7 @@
       </div>
       <p class="foot">
         {{ t()('army.domUsed') }} <strong>{{ neededDominance() | number: '1.0-0' }}</strong>
-        @if (attacks() > 1) {
+        @if (attacks() !== 1) {
           <span class="muted"> ({{ monsterPlan().dominanceUsed | number: '1.0-0' }} × {{ attacks() }})</span>
         }
         / {{ dominance() | number: '1.0-0' }}
@@ -445,7 +446,7 @@
     <article class="panel block buy">
       <h2>
         {{ t()('army.monsterBuy') }}
-        @if (attacks() > 1) {
+        @if (attacks() !== 1) {
           <span class="attacks-badge">×{{ attacks() }}</span>
         }
       </h2>

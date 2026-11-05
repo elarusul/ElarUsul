@@ -29,6 +29,7 @@ import {
   monsterGridTotals,
   planArmyTargets,
   planMonsterTargets,
+  normalizeAttacks,
   scaleGrid,
   scaleMonsterGrid,
   silverForGrid,
@@ -148,9 +149,7 @@ export class ArmyPage {
 
   protected readonly targetCapacity = signal(SAVED.targetCapacity);
   protected readonly dominance = signal(SAVED.dominance);
-  protected readonly attacks = signal(
-    Math.min(99, Math.max(1, Math.round(SAVED.attacks ?? 1))),
-  );
+  protected readonly attacks = signal(normalizeAttacks(SAVED.attacks ?? 1));
   protected readonly maxTier = signal(
     Math.min(GUARDS_MAX_TIER, Math.max(1, SAVED.maxTier)),
   );
@@ -483,8 +482,11 @@ export class ArmyPage {
   }
 
   protected setAttacks(value: string | number): void {
-    const n = this.parseAmount(value);
-    this.attacks.set(Math.min(99, Math.max(1, n || 1)));
+    const raw =
+      typeof value === 'number'
+        ? value
+        : Number(String(value ?? '').trim().replace(',', '.'));
+    this.attacks.set(normalizeAttacks(raw, 1));
   }
 
   /** Zaznacza wartosc przy focusie, zeby wpisanie cyfry nadpisalo np. 0. */

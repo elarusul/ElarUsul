@@ -38,7 +38,7 @@ export const UI_PL: Dict = {
   'army.attacks': 'Liczba ataków',
   'army.attacks.tipTitle': 'Liczba ataków',
   'army.attacks.tip':
-    'Ile identycznych marszów planujesz. Docelowe ilości i „do dokupienia” są mnożone przez tę liczbę (stan aktualny bez zmian). Pojemność / Dominance nadal dotyczą jednego marszu.',
+    'Ile identycznych marszów planujesz (np. 0.5 = połowa składu jednego marszu, kroki co 0.5). Docelowe ilości i „do dokupienia” są mnożone przez tę liczbę (stan aktualny bez zmian). Pojemność / Dominance nadal dotyczą jednego marszu.',
   'army.tier': 'Max tier G',
   'army.tier.tipTitle': 'Max tier G',
   'army.tier.tip':
@@ -161,7 +161,7 @@ export const UI_EN: Dict = {
   'army.attacks': 'Attacks',
   'army.attacks.tipTitle': 'Attacks',
   'army.attacks.tip':
-    'How many identical marches you plan. Target amounts and “to buy” are multiplied by this number (current stock stays as entered). Capacity / Dominance still describe a single march.',
+    'How many identical marches you plan (e.g. 0.5 = half of one march’s composition, in 0.5 steps). Target amounts and “to buy” are multiplied by this number (current stock stays as entered). Capacity / Dominance still describe a single march.',
   'army.tier': 'Max tier G',
   'army.tier.tipTitle': 'Max tier G',
   'army.tier.tip':

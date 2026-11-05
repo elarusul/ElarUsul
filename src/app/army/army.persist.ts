@@ -18,6 +18,7 @@ import {
   cloneMonsterGrid,
   emptyMonsterGrid,
 } from './monsters.data';
+import { normalizeAttacks } from './army.engine';
 
 const STORAGE_KEY = 'elar-usul.army-state';
 const STORAGE_VERSION = 2;
@@ -26,7 +27,7 @@ export interface ArmyPersistedState {
   v: number;
   targetCapacity: number;
   dominance: number;
-  /** How many identical marches/attacks to prepare for (multiplies targets). */
+  /** Marches to prepare for (0.5 steps; multiplies targets). */
   attacks: number;
   maxTier: number;
   maxTierS: number;
@@ -198,9 +199,9 @@ export function loadArmyState(): ArmyPersistedState {
       v: STORAGE_VERSION,
       targetCapacity: Math.max(0, asFiniteNumber(parsed.targetCapacity, defaults.targetCapacity)),
       dominance: Math.max(0, asFiniteNumber(parsed.dominance, defaults.dominance)),
-      attacks: Math.max(
-        1,
-        Math.min(99, Math.round(asFiniteNumber(parsed.attacks, defaults.attacks))),
+      attacks: normalizeAttacks(
+        asFiniteNumber(parsed.attacks, defaults.attacks),
+        defaults.attacks,
       ),
       maxTier: Math.max(
         1,
