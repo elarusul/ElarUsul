@@ -481,11 +481,52 @@ export class ArmyPage {
     );
   }
 
+  /** 0.5 ↔ 1 ↔ 2 ↔ … (strzałki / spinner). */
+  protected bumpAttacks(direction: 1 | -1): void {
+    const cur = this.attacks();
+    if (direction > 0) {
+      this.attacks.set(cur < 1 ? 1 : Math.min(99, Math.round(cur) + 1));
+      return;
+    }
+    if (cur <= 0.5) {
+      this.attacks.set(0.5);
+      return;
+    }
+    if (cur <= 1) {
+      this.attacks.set(0.5);
+      return;
+    }
+    this.attacks.set(Math.max(1, Math.round(cur) - 1));
+  }
+
+  protected onAttacksKeydown(event: KeyboardEvent): void {
+    if (event.key === 'ArrowUp') {
+      event.preventDefault();
+      this.bumpAttacks(1);
+      return;
+    }
+    if (event.key === 'ArrowDown') {
+      event.preventDefault();
+      this.bumpAttacks(-1);
+    }
+  }
+
   protected setAttacks(value: string | number): void {
     const raw =
       typeof value === 'number'
         ? value
         : Number(String(value ?? '').trim().replace(',', '.'));
+    const prev = this.attacks();
+    if (!Number.isFinite(raw)) {
+      this.attacks.set(normalizeAttacks(raw, 1));
+      return;
+    }
+    // Native spinner: step 0.5 daje 1→0.5 (OK) oraz 1→1.5 / 2→1.5 — mapujemy na 0.5,1,2,3…
+    if (raw !== prev && Math.abs(raw - prev) <= 1.0001) {
+      this.bumpAttacks(raw > prev ? 1 : -1);
+      return;
+    }
+    // 1.5, 2.5… wpisane / wklejone → najbliższa dozwolona (bez połów powyżej 1)
     this.attacks.set(normalizeAttacks(raw, 1));
   }
 

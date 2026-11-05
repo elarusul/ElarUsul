@@ -27,7 +27,7 @@ export interface ArmyPersistedState {
   v: number;
   targetCapacity: number;
   dominance: number;
-  /** Marches to prepare for (0.5 steps; multiplies targets). */
+  /** Marches to prepare for: 0.5 or whole 1…99 (multiplies targets). */
   attacks: number;
   maxTier: number;
   maxTierS: number;

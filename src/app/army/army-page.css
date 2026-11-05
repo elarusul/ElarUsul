@@ -107,12 +107,18 @@
   position: relative;
   z-index: 1;
   width: 100%;
+  overflow: visible;
+}
+
+.setup-row:has(.tip) {
+  z-index: 40;
 }
 
 .setup-row > .toolbar {
   margin-bottom: 0;
   min-width: 0;
   box-sizing: border-box;
+  overflow: visible;
 }
 
 .toolbar {
@@ -142,6 +148,13 @@
   font-size: 0.7rem;
   letter-spacing: 0.04em;
   text-transform: uppercase;
+  overflow: visible;
+}
+
+/* Tip wychodzi poza komórkę — bez tego sąsiad z siatki maluje się nad podpowiedzią. */
+.tool:has(.tip),
+.tool:has(.info.is-open) {
+  z-index: 30;
 }
 
 .tool-wide {
@@ -298,9 +311,9 @@ table input {
 
 .tip {
   position: absolute;
-  top: 1.35rem;
+  top: calc(100% + 6px);
   left: 0;
-  z-index: 20;
+  z-index: 50;
   width: min(280px, 70vw);
   padding: 8px 10px;
   border: 1px solid #c4a882;
@@ -316,6 +329,7 @@ table input {
   letter-spacing: 0;
   line-height: 1.35;
   text-transform: none;
+  pointer-events: auto;
 }
 
 .tip strong {
@@ -1016,6 +1030,10 @@ tbody th {
     overflow: visible;
   }
 
+  .setup-row:has(.tip) {
+    z-index: 60;
+  }
+
   .tools-row {
     display: grid;
     grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
@@ -1035,6 +1053,18 @@ tbody th {
   .tools-row .tool input[type='number'] {
     min-width: 0;
     max-width: 100%;
+  }
+
+  /* Pełniejsza szerokość + nie wychodzi poza ekran w prawej kolumnie. */
+  .tool .tip {
+    top: calc(100% + 4px);
+    width: min(20rem, calc(100vw - 2rem));
+    max-width: calc(100vw - 2rem);
+  }
+
+  .tools-row > .tool:nth-child(even) .tip {
+    left: auto;
+    right: 0;
   }
 }
 

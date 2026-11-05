@@ -106,6 +106,7 @@
         step="0.5"
         [ngModel]="attacks()"
         (ngModelChange)="setAttacks($event)"
+        (keydown)="onAttacksKeydown($event)"
         name="attacks"
       />
     </label>

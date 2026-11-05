@@ -166,13 +166,13 @@ export function subtractGrids(
 }
 
 /**
- * Attacks multiplier: half-steps from 0.5 … 99 (e.g. 0.5 = half a march).
+ * Attacks multiplier: 0.5 (half march), then whole numbers 1…99.
  * Invalid / non-positive → fallback (default 1).
  */
 export function normalizeAttacks(factor: number, fallback = 1): number {
   if (!Number.isFinite(factor) || factor <= 0) return fallback;
-  const snapped = Math.round(factor * 2) / 2;
-  return Math.min(99, Math.max(0.5, snapped));
+  if (factor < 0.75) return 0.5;
+  return Math.min(99, Math.max(1, Math.round(factor)));
 }
 
 /** Multiply troop counts (e.g. N attacks). Allows 0.5; rounds each cell to an integer. */
