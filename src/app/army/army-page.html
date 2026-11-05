@@ -208,7 +208,7 @@
                   <td [class.locked]="!available(type, tier)">
                     @if (available(type, tier)) {
                       <span class="cell-with-icon">
-                        <img class="troop-icon sm" [src]="guardsTierIcon(type, tier)" [alt]="typeLabel(type)" width="26" height="26" />
+                        <img class="troop-icon sm" [src]="guardsTierIcon(type, tier)" [alt]="typeLabel(type)" width="36" height="36" />
                         <span>{{ targets()[tier][type] | number: '1.0-0' }}</span>
                       </span>
                     } @else {
@@ -258,7 +258,7 @@
                   <td [class.locked]="!available(type, tier)">
                     @if (available(type, tier)) {
                       <span class="cell-with-icon">
-                        <img class="troop-icon sm" [src]="guardsTierIcon(type, tier)" [alt]="typeLabel(type)" width="26" height="26" />
+                        <img class="troop-icon sm" [src]="guardsTierIcon(type, tier)" [alt]="typeLabel(type)" width="36" height="36" />
                         <input
                           type="number"
                           min="0"
@@ -317,7 +317,7 @@
                   >
                     @if (available(type, tier)) {
                       <span class="cell-with-icon">
-                        <img class="troop-icon sm" [src]="guardsTierIcon(type, tier)" [alt]="typeLabel(type)" width="26" height="26" />
+                        <img class="troop-icon sm" [src]="guardsTierIcon(type, tier)" [alt]="typeLabel(type)" width="36" height="36" />
                         <span>{{ toBuy()[tier][type] | number: '1.0-0' }}</span>
                       </span>
                     } @else {
@@ -365,7 +365,7 @@
                   <td [class.locked]="!raceEnabled(race)">
                     @if (raceEnabled(race)) {
                       <span class="cell-with-icon">
-                        <img class="troop-icon sm" [src]="monsterTierIcon(race, tier)" [alt]="monsterName(tier, race)" width="26" height="26" />
+                        <img class="troop-icon sm" [src]="monsterTierIcon(race, tier)" [alt]="monsterName(tier, race)" width="36" height="36" />
                         <span>{{ monsterTargets()[tier][race] | number: '1.0-0' }}</span>
                       </span>
                       <small class="cell-meta">{{ monsterName(tier, race) }}</small>
@@ -416,7 +416,7 @@
                   <td [class.locked]="!raceEnabled(race)">
                     @if (raceEnabled(race)) {
                       <span class="cell-with-icon">
-                        <img class="troop-icon sm" [src]="monsterTierIcon(race, tier)" [alt]="monsterName(tier, race)" width="26" height="26" />
+                        <img class="troop-icon sm" [src]="monsterTierIcon(race, tier)" [alt]="monsterName(tier, race)" width="36" height="36" />
                         <input
                           type="number"
                           min="0"
@@ -475,7 +475,7 @@
                   >
                     @if (raceEnabled(race)) {
                       <span class="cell-with-icon">
-                        <img class="troop-icon sm" [src]="monsterTierIcon(race, tier)" [alt]="monsterName(tier, race)" width="26" height="26" />
+                        <img class="troop-icon sm" [src]="monsterTierIcon(race, tier)" [alt]="monsterName(tier, race)" width="36" height="36" />
                         <span>{{ monstersToBuy()[tier][race] | number: '1.0-0' }}</span>
                       </span>
                     } @else {
