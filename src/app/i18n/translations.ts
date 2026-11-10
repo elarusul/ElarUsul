@@ -94,7 +94,7 @@ export const UI_PL: Dict = {
   'army.silverFold': 'Stawki i koszty srebra',
   'army.silverFold.show': 'Pokaż',
   'army.silverFold.hide': 'Ukryj',
-  'army.rates': 'Stawki srebra - gwardia (wiki)',
+  'army.rates': 'Stawki srebra wojska',
   'army.ratesReset': 'Przywróć domyślne',
   'army.ratesFromRanged': 'Przelicz z łuczników',
   'army.ratesFromRanged.base': 'baza',
@@ -102,7 +102,7 @@ export const UI_PL: Dict = {
     'Wpisz stawki łuczników (kolumna „baza”, G1–G5), potem kliknij „Przelicz z łuczników” - włócznicy, jeźdźcy i gryfy uzupełnią się proporcjonalnie do stawki bazowej. Następnie możesz poprawić dowolną komórkę ręcznie.',
   'army.ratesHint':
     'Najniższe stawki treningu pochodzą z Total Battle Wiki i obowiązują przy maksymalnie rozwiniętych badaniach Training Cost. Jeśli nie masz ich w pełni ukończonych albo brakuje Ci jedzenia, trening będzie droższy. W takiej sytuacji popraw stawki ręcznie.',
-  'army.monsterRates': 'Stawki treningu - potwory (wiki)',
+  'army.monsterRates': 'Stawki potworów',
   'army.monsterRatesHint':
     'Oficjalna podłoga: srebro + smocze monety (Total Battle Wiki). Popraw ręcznie, jeśli masz inne koszty po researchu.',
   'army.value': 'Wartość armii (aktualny stan)',
@@ -221,7 +221,7 @@ export const UI_EN: Dict = {
   'army.silverFold': 'Silver rates and costs',
   'army.silverFold.show': 'Show',
   'army.silverFold.hide': 'Hide',
-  'army.rates': 'Silver rates - guardsmen (wiki)',
+  'army.rates': 'Troop silver rates',
   'army.ratesReset': 'Reset defaults',
   'army.ratesFromRanged': 'Fill from ranged',
   'army.ratesFromRanged.base': 'base',
@@ -229,7 +229,7 @@ export const UI_EN: Dict = {
     'Enter ranged rates (the “base” column, G1–G5), then click “Fill from ranged” - melee, mounted and griffins fill in proportionally to the base rate. Afterwards you can edit any cell manually.',
   'army.ratesHint':
     'The lowest training rates come from Total Battle Wiki and apply when Training Cost research is fully maxed. If you have not completed it fully or you are short on food, training will cost more. In that case, edit the rates manually.',
-  'army.monsterRates': 'Training rates - monsters (wiki)',
+  'army.monsterRates': 'Monster rates',
   'army.monsterRatesHint':
     'Official floor: silver + dragon coins (Total Battle Wiki). Edit manually if your costs differ after research.',
   'army.value': 'Army value (current state)',
