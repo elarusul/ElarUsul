@@ -104,3 +104,37 @@ export function cloneGrid(
   }
   return grid;
 }
+
+/**
+ * Fill melee / mounted / flying from ranged (Łucznicy) using wiki floor ratios per tier.
+ * Keeps the given ranged values; other cells stay editable after.
+ */
+export function ratesFromRangedBase(
+  rates: Record<number, Record<ArmyType, number>>,
+  tiers: readonly number[],
+): Record<number, Record<ArmyType, number>> {
+  const grid = emptyGrid(tiers);
+  for (const tier of tiers) {
+    const ranged = Math.max(0, Math.round(rates[tier]?.ranged ?? 0));
+    const floor = FLOOR_SILVER[tier];
+    const floorRanged = floor?.ranged ?? 0;
+    for (const type of ARMY_TYPES) {
+      if (!isTypeAvailable(type, tier)) {
+        grid[tier][type] = 0;
+        continue;
+      }
+      if (type === 'ranged') {
+        grid[tier][type] = ranged;
+        continue;
+      }
+      if (!floor || floorRanged <= 0) {
+        const leadR = OFFICIAL_LEADERSHIP.ranged;
+        const leadT = OFFICIAL_LEADERSHIP[type];
+        grid[tier][type] = Math.round((ranged * leadT) / leadR);
+        continue;
+      }
+      grid[tier][type] = Math.round((ranged * (floor[type] ?? 0)) / floorRanged);
+    }
+  }
+  return grid;
+}

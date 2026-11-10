@@ -527,18 +527,43 @@
           <article class="panel block current">
             <h2>
               {{ t()('army.rates') }}
-              <button type="button" class="linkish" (click)="resetRatesToFloor()">{{ t()('army.ratesReset') }}</button>
+              <span class="panel-actions tip-host">
+                <button type="button" class="linkish" (click)="resetRatesToFloor()">{{ t()('army.ratesReset') }}</button>
+                <button
+                  type="button"
+                  class="linkish"
+                  (click)="deriveRatesFromRanged()"
+                >
+                  {{ t()('army.ratesFromRanged') }}
+                </button>
+                <button
+                  type="button"
+                  class="info"
+                  [class.is-open]="openHint() === 'ratesFromRanged'"
+                  [attr.aria-label]="t()('army.info')"
+                  (click)="toggleHint('ratesFromRanged', $event)"
+                >i</button>
+                @if (openHint() === 'ratesFromRanged') {
+                  <span class="tip tip-rates-from" (click)="$event.stopPropagation()">
+                    <strong>{{ t()('army.ratesFromRanged') }}</strong>
+                    {{ t()('army.ratesFromRanged.hint') }}
+                  </span>
+                }
+              </span>
             </h2>
             <div class="table-wrap">
-              <table>
+              <table class="rates-table">
                 <thead>
                   <tr>
                     <th></th>
                     @for (type of types; track type) {
-                      <th>
+                      <th [class.rate-base-col]="type === 'ranged'">
                         <span class="th-pl">{{ typeLabel(type) }}</span>
                         @if (i18n.lang() === 'pl') {
                           <span class="th-en">{{ typeLabelEn(type) }}</span>
+                        }
+                        @if (type === 'ranged') {
+                          <span class="rate-base-tag">{{ t()('army.ratesFromRanged.base') }}</span>
                         }
                       </th>
                     }
@@ -549,7 +574,10 @@
                     <tr>
                       <th>G{{ tier }}</th>
                       @for (type of types; track type) {
-                        <td [class.locked]="!available(type, tier)">
+                        <td
+                          [class.locked]="!available(type, tier)"
+                          [class.rate-base-col]="type === 'ranged' && available(type, tier)"
+                        >
                           @if (available(type, tier)) {
                             <input
                               type="number"

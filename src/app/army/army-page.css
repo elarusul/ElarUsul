@@ -219,6 +219,65 @@ table input {
   background: linear-gradient(180deg, #fff8ea 0%, #ead7b0 100%);
 }
 
+.panel-actions {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  margin-left: auto;
+}
+
+.panel-actions .linkish {
+  margin-left: 0;
+}
+
+.panel-actions .info {
+  margin-inline-start: 0;
+  vertical-align: middle;
+}
+
+.panel-actions .tip-rates-from {
+  left: auto;
+  right: 0;
+  width: min(320px, 78vw);
+}
+
+.rate-base-col {
+  background: rgba(141, 106, 56, 0.05);
+}
+
+.rate-base-tag {
+  display: block;
+  width: fit-content;
+  margin-top: 2px;
+  padding: 0 5px;
+  border-radius: 4px;
+  border: 1px solid rgba(196, 168, 130, 0.55);
+  background: rgba(255, 252, 245, 0.65);
+  color: #8a7358;
+  font-size: 0.58rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  line-height: 1.35;
+}
+
+.silver-row .rate-base-tag {
+  font-size: 0.5rem;
+  padding: 0 4px;
+}
+
+.silver-row .rates-table thead th {
+  height: auto;
+  min-height: 2.6rem;
+  vertical-align: bottom;
+}
+
+.rates-table td.rate-base-col input {
+  border-color: #c4a882;
+  background: rgba(255, 253, 248, 0.72);
+}
+
 .types {
   display: flex;
   flex-wrap: wrap;

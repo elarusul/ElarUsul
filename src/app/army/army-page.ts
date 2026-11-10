@@ -20,6 +20,7 @@ import {
   emptyGrid,
   emptyRow,
   isTypeAvailable,
+  ratesFromRangedBase,
 } from "./army.data";
 import {
   costForMonsterGrid,
@@ -619,6 +620,10 @@ export class ArmyPage {
       }
     }
     this.rates.set(grid);
+  }
+
+  protected deriveRatesFromRanged(): void {
+    this.rates.set(ratesFromRangedBase(this.rates(), this.tiers()));
   }
 
   protected resetMonsterRatesToFloor(): void {
