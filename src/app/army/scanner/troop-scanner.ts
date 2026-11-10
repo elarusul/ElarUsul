@@ -151,10 +151,13 @@ export async function scanTroopScreenshot(
     guardsMaxTier?: number;
     monstersMaxTier?: number;
     onProgress?: (message: string) => void;
+    /** Fired as soon as one unit tile is matched + OCR'd (before the full scan ends). */
+    onHit?: (hit: ScanHit) => void;
   },
 ): Promise<ScanResult> {
   const t0 = performance.now();
   const progress = options?.onProgress ?? (() => undefined);
+  const onHit = options?.onHit;
 
   progress('Wczytywanie screenshota…');
   const shotEl = await loadImageElement(file);
@@ -180,11 +183,13 @@ export async function scanTroopScreenshot(
     const loc = findRefOnShot(shot, p);
     if (!loc) {
       unmatchedTiles++;
+      // Let the UI paint progress between misses too
+      await yieldToUi();
       continue;
     }
     const patch = cropRgba(shot, loc.x, loc.y, loc.size, loc.size);
     const ocr = await readTroopCount(patch);
-    hits.push({
+    const hit: ScanHit = {
       ref: p.ref,
       count: ocr.count,
       score: loc.score,
@@ -193,7 +198,10 @@ export async function scanTroopScreenshot(
       x: loc.x,
       y: loc.y,
       size: loc.size,
-    });
+    };
+    hits.push(hit);
+    onHit?.(hit);
+    await yieldToUi();
   }
 
   // Same on-screen tile can match neighbouring tiers — keep highest score
@@ -215,4 +223,8 @@ export async function scanTroopScreenshot(
     unmatchedTiles,
     durationMs: Math.round(performance.now() - t0),
   };
+}
+
+function yieldToUi(): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, 0));
 }

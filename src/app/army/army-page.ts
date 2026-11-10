@@ -670,11 +670,14 @@ export class ArmyPage {
         guardsMaxTier: this.maxTier(),
         monstersMaxTier: this.maxTierM(),
         onProgress: (message) => this.scanProgress.set(message),
+        onHit: (hit) => this.appendScanHit(hit),
       });
       if (!result.hits.length) {
+        this.scanDraft.set([]);
         this.scanStatus.set(this.t()("army.scan.empty"));
         return;
       }
+      // Final authoritative list (clash winners only)
       this.scanDraft.set(
         result.hits.map((hit) => ({
           hit,
@@ -695,6 +698,37 @@ export class ArmyPage {
       this.scanBusy.set(false);
       this.scanProgress.set("");
     }
+  }
+
+  /** Show each match in the review list as soon as it is found. */
+  private appendScanHit(hit: ScanHit): void {
+    this.scanDraft.update((rows) => {
+      const clashes = (a: ScanHit, b: ScanHit) => {
+        const lim = Math.min(a.size, b.size) * 0.45;
+        return Math.abs(a.x - b.x) < lim && Math.abs(a.y - b.y) < lim;
+      };
+
+      for (let i = 0; i < rows.length; i++) {
+        if (!clashes(rows[i].hit, hit)) continue;
+        if (rows[i].hit.score >= hit.score) return rows;
+        const next = rows.slice();
+        next[i] = {
+          hit,
+          count: hit.count ?? 0,
+          include: hit.count != null && hit.count > 0,
+        };
+        return next;
+      }
+
+      return [
+        ...rows,
+        {
+          hit,
+          count: hit.count ?? 0,
+          include: hit.count != null && hit.count > 0,
+        },
+      ];
+    });
   }
 
   protected setScanCount(index: number, value: string | number): void {

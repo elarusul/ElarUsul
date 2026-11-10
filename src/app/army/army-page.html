@@ -171,8 +171,22 @@
           }
         </div>
         <div class="scan-actions">
-          <button type="button" class="linkish" (click)="applyScanDraft()">{{ t()('army.scan.apply') }}</button>
-          <button type="button" class="linkish" (click)="cancelScanDraft()">{{ t()('army.scan.cancel') }}</button>
+          <button
+            type="button"
+            class="linkish"
+            [disabled]="scanBusy()"
+            (click)="applyScanDraft()"
+          >
+            {{ t()('army.scan.apply') }}
+          </button>
+          <button
+            type="button"
+            class="linkish"
+            [disabled]="scanBusy()"
+            (click)="cancelScanDraft()"
+          >
+            {{ t()('army.scan.cancel') }}
+          </button>
         </div>
       </div>
     }

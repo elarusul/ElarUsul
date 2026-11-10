@@ -84,7 +84,12 @@ export function cropRgba(
   return { data: out, width: w, height: h };
 }
 
-export function resizeRgba(src: RgbaImage, tw: number, th: number): RgbaImage {
+export function resizeRgba(
+  src: RgbaImage,
+  tw: number,
+  th: number,
+  smooth = true,
+): RgbaImage {
   const canvas = document.createElement('canvas');
   canvas.width = src.width;
   canvas.height = src.height;
@@ -94,7 +99,8 @@ export function resizeRgba(src: RgbaImage, tw: number, th: number): RgbaImage {
   out.width = tw;
   out.height = th;
   const octx = out.getContext('2d', { willReadFrequently: true })!;
-  octx.imageSmoothingEnabled = true;
+  // Nearest-neighbor keeps holes in "0" from filling into "8"
+  octx.imageSmoothingEnabled = smooth;
   octx.drawImage(canvas, 0, 0, tw, th);
   const imageData = octx.getImageData(0, 0, tw, th);
   return {
