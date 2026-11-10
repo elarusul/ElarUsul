@@ -557,13 +557,13 @@
                   <tr>
                     <th></th>
                     @for (type of types; track type) {
-                      <th [class.rate-base-col]="type === 'ranged'">
+                      <th [class.rate-base-head]="type === 'ranged'">
                         <span class="th-pl">{{ typeLabel(type) }}</span>
                         @if (i18n.lang() === 'pl') {
                           <span class="th-en">{{ typeLabelEn(type) }}</span>
                         }
                         @if (type === 'ranged') {
-                          <span class="rate-base-tag">{{ t()('army.ratesFromRanged.base') }}</span>
+                          <span class="rate-base-note">G1 · {{ t()('army.ratesFromRanged.base') }}</span>
                         }
                       </th>
                     }
@@ -574,17 +574,16 @@
                     <tr>
                       <th>G{{ tier }}</th>
                       @for (type of types; track type) {
-                        <td
-                          [class.locked]="!available(type, tier)"
-                          [class.rate-base-col]="type === 'ranged' && available(type, tier)"
-                        >
+                        <td [class.locked]="!available(type, tier)">
                           @if (available(type, tier)) {
                             <input
                               type="number"
                               min="0"
+                              [class.rate-base-input]="tier === 1 && type === 'ranged'"
                               [ngModel]="rates()[tier]?.[type] ?? 0"
                               (ngModelChange)="setRate(tier, type, $event)"
                               [name]="'rate-' + tier + '-' + type"
+                              [attr.aria-label]="tier === 1 && type === 'ranged' ? t()('army.ratesFromRanged.base') : null"
                             />
                           } @else {
                             -

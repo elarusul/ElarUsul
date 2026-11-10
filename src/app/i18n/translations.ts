@@ -96,10 +96,10 @@ export const UI_PL: Dict = {
   'army.silverFold.hide': 'Ukryj',
   'army.rates': 'Stawki srebra wojska',
   'army.ratesReset': 'Przywróć domyślne',
-  'army.ratesFromRanged': 'Przelicz z łuczników',
+  'army.ratesFromRanged': 'Przelicz z Łucznika G1',
   'army.ratesFromRanged.base': 'baza',
   'army.ratesFromRanged.hint':
-    'Wpisz stawki łuczników (kolumna „baza”, G1–G5), potem kliknij „Przelicz z łuczników” - włócznicy, jeźdźcy i gryfy uzupełnią się proporcjonalnie do stawki bazowej. Następnie możesz poprawić dowolną komórkę ręcznie.',
+    'Wpisz aktualną stawkę w polu łucznika G1 (oznaczone przy nagłówku jako baza), potem kliknij „Przelicz z Łucznika G1”. Reszta wojska G wyliczy się z ratio = Twoja stawka / stawka wiki. Następnie możesz poprawić dowolną komórkę ręcznie.',
   'army.ratesHint':
     'Najniższe stawki treningu pochodzą z Total Battle Wiki i obowiązują przy maksymalnie rozwiniętych badaniach Training Cost. Jeśli nie masz ich w pełni ukończonych albo brakuje Ci jedzenia, trening będzie droższy. W takiej sytuacji popraw stawki ręcznie.',
   'army.monsterRates': 'Stawki potworów',
@@ -223,10 +223,10 @@ export const UI_EN: Dict = {
   'army.silverFold.hide': 'Hide',
   'army.rates': 'Troop silver rates',
   'army.ratesReset': 'Reset defaults',
-  'army.ratesFromRanged': 'Fill from ranged',
+  'army.ratesFromRanged': 'Fill from G1 ranged',
   'army.ratesFromRanged.base': 'base',
   'army.ratesFromRanged.hint':
-    'Enter ranged rates (the “base” column, G1–G5), then click “Fill from ranged” - melee, mounted and griffins fill in proportionally to the base rate. Afterwards you can edit any cell manually.',
+    'Enter your current rate in the G1 ranged field (marked as base under the column header), then click “Fill from G1 ranged”. All other G troop rates are scaled by ratio = your rate / wiki rate. Afterwards you can edit any cell manually.',
   'army.ratesHint':
     'The lowest training rates come from Total Battle Wiki and apply when Training Cost research is fully maxed. If you have not completed it fully or you are short on food, training will cost more. In that case, edit the rates manually.',
   'army.monsterRates': 'Monster rates',

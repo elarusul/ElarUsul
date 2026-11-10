@@ -106,34 +106,29 @@ export function cloneGrid(
 }
 
 /**
- * Fill melee / mounted / flying from ranged (Łucznicy) using wiki floor ratios per tier.
- * Keeps the given ranged values; other cells stay editable after.
+ * Scale all guardsmen rates from a single current G1 ranged (Łucznik) price.
+ * ratio = currentG1Ranged / wikiFloorG1Ranged; every cell = round(wikiFloor × ratio).
  */
 export function ratesFromRangedBase(
   rates: Record<number, Record<ArmyType, number>>,
   tiers: readonly number[],
 ): Record<number, Record<ArmyType, number>> {
+  const floorG1Ranged = FLOOR_SILVER[1]?.ranged ?? 0;
+  const currentG1Ranged = Math.max(0, Math.round(rates[1]?.ranged ?? 0));
+  const ratio = floorG1Ranged > 0 ? currentG1Ranged / floorG1Ranged : 0;
   const grid = emptyGrid(tiers);
   for (const tier of tiers) {
-    const ranged = Math.max(0, Math.round(rates[tier]?.ranged ?? 0));
     const floor = FLOOR_SILVER[tier];
-    const floorRanged = floor?.ranged ?? 0;
     for (const type of ARMY_TYPES) {
       if (!isTypeAvailable(type, tier)) {
         grid[tier][type] = 0;
         continue;
       }
-      if (type === 'ranged') {
-        grid[tier][type] = ranged;
+      if (!floor) {
+        grid[tier][type] = 0;
         continue;
       }
-      if (!floor || floorRanged <= 0) {
-        const leadR = OFFICIAL_LEADERSHIP.ranged;
-        const leadT = OFFICIAL_LEADERSHIP[type];
-        grid[tier][type] = Math.round((ranged * leadT) / leadR);
-        continue;
-      }
-      grid[tier][type] = Math.round((ranged * (floor[type] ?? 0)) / floorRanged);
+      grid[tier][type] = Math.round((floor[type] ?? 0) * ratio);
     }
   }
   return grid;
