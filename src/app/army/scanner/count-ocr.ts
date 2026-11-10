@@ -39,26 +39,54 @@ interface ParsedCandidate {
   quality: number;
 }
 
+/** Game counts use European thousands: 1.234 / 12.345 / 111.111 */
+const THOUSANDS_RE = /^\d{1,3}([.,]\d{3})+$/;
+
+function formatThousands(digits: string): string {
+  const d = digits.replace(/\D/g, '');
+  if (d.length <= 3) return d;
+  const parts: string[] = [];
+  let i = d.length;
+  while (i > 3) {
+    parts.unshift(d.slice(i - 3, i));
+    i -= 3;
+  }
+  parts.unshift(d.slice(0, i));
+  return parts.join('.');
+}
+
 function qualityFor(raw: string, value: number): number {
   const compact = raw.replace(/\s/g, '');
   let q = 0;
-  if (/^[12]([.,]\d{3})+$/.test(compact)) q += 110;
-  else if (/^[3-9][.,]\d{3}$/.test(compact)) q += 35;
-  else if (/^\d{1,3}([.,]\d{3})+$/.test(compact)) q += 100;
-  else if (/^\d{1,4}$/.test(compact) && value < 10000) q += 70;
-  else if (String(value).length >= 5) q -= 40;
-  else q += 20;
 
-  if (value > 200_000) q -= 50;
-  if (value >= 10 && value <= 50_000) q += 10;
-  if (/^\d{3}$/.test(compact)) q += 15;
+  // Well-formed 111.111 / 12.345 / 1.234 — always prefer over "only after the dot"
+  if (THOUSANDS_RE.test(compact)) {
+    q += 140;
+    // Longer grouped readings beat shorter tails (111.111 > 111)
+    q += Math.min(30, String(value).length * 4);
+  } else if (/^\d{1,4}$/.test(compact) && value < 10000) {
+    q += 70;
+  } else if (/^\d{5,7}$/.test(compact)) {
+    // Digits without separator — still plausible, but below dotted form
+    q += 90;
+  } else if (String(value).length >= 5) {
+    q -= 20;
+  } else {
+    q += 20;
+  }
+
+  if (value > 500_000) q -= 60;
+  else if (value > 200_000) q -= 25;
+  if (value >= 10 && value <= 200_000) q += 10;
+  if (/^\d{3}$/.test(compact)) q += 8;
   // Round hundreds like 100 often come from misread 967 / 1080
-  if (/^[1-9]00$/.test(compact)) q -= 25;
+  if (/^[1-9]00$/.test(compact)) q -= 35;
   return q;
 }
 
 /**
- * Expand OCR text into plausible troop counts (handles phantom frame digits).
+ * Expand OCR text into plausible troop counts.
+ * Preserves digits before the thousands separator (111.111 → 111111, not 111).
  */
 export function parseTroopCountCandidates(text: string): ParsedCandidate[] {
   const found = new Map<number, ParsedCandidate>();
@@ -73,44 +101,33 @@ export function parseTroopCountCandidates(text: string): ParsedCandidate[] {
 
   const addFromToken = (token: string) => {
     let cleaned = token.replace(/[^\d.,]/g, '');
-    cleaned = cleaned.replace(/^\.+|\.+$/g, '');
+    cleaned = cleaned.replace(/^[.,]+|[.,]+$/g, '');
     if (!cleaned) return;
 
-    if (/^\d{1,3}([.,]\d{3})+$/.test(cleaned)) {
+    // Primary: keep full grouped number (never drop the head before '.')
+    if (THOUSANDS_RE.test(cleaned)) {
       push(cleaned, Number(cleaned.replace(/[.,]/g, '')));
-    } else if (/^\d{1,7}$/.test(cleaned)) {
-      push(cleaned, Number(cleaned));
-    } else {
-      const n = Number(cleaned.replace(/[.,]/g, ''));
-      if (Number.isFinite(n) && n > 0) push(cleaned, n);
+      // Optional: one phantom frame digit (81.234 → also 1.234), but never bare "234"
+      const phantom = cleaned.match(/^(\d)(\d{1,2}[.,]\d{3})$/);
+      if (phantom && THOUSANDS_RE.test(phantom[2])) {
+        push(phantom[2], Number(phantom[2].replace(/[.,]/g, '')));
+      }
+      return;
     }
 
     const digits = cleaned.replace(/[.,]/g, '');
-    for (let strip = 1; strip <= 2 && strip < digits.length; strip++) {
-      const restDigits = digits.slice(strip);
-      if (!restDigits || /^0+$/.test(restDigits)) continue;
+    if (!digits || /^0+$/.test(digits)) return;
 
-      if (restDigits.length === 4) {
-        push(`${restDigits[0]}.${restDigits.slice(1)}`, Number(restDigits));
-      } else if (restDigits.length <= 4) {
-        push(restDigits, Number(restDigits));
-      } else if (restDigits.length === 5 || restDigits.length === 6) {
-        const head = restDigits.length - 3;
-        push(
-          `${restDigits.slice(0, head)}.${restDigits.slice(head)}`,
-          Number(restDigits),
-        );
+    if (/^\d{1,7}$/.test(digits)) {
+      push(digits, Number(digits));
+      // Reconstruct 111.111 when Tesseract omitted the dot
+      if (digits.length >= 4) {
+        push(formatThousands(digits), Number(digits));
       }
-
-      const sepMatch = cleaned.match(/^(\d{1,2})[.,](.+)$/);
-      if (!sepMatch) continue;
-      const after = sepMatch[2].replace(/[.,]/g, '');
-      if (/^\d{3}$/.test(after)) push(after, Number(after));
-      if (sepMatch[1].length === 2) {
-        const rest = `${sepMatch[1][1]}.${sepMatch[2]}`;
-        if (/^\d[.,]\d{3}$/.test(rest)) {
-          push(rest, Number(rest.replace(/[.,]/g, '')));
-        }
+    } else {
+      const n = Number(digits);
+      if (Number.isFinite(n) && n > 0) {
+        push(formatThousands(digits), n);
       }
     }
   };
@@ -143,11 +160,11 @@ interface Region {
   h: number;
 }
 
-/** Bottom-right count areas (fractions of the tile). */
+/** Bottom-right count areas (fractions of the tile). Wider left = keep digits before '.' */
 const REGIONS: Region[] = [
-  { x: 0.3, y: 0.68, w: 0.62, h: 0.26 },
-  { x: 0.34, y: 0.72, w: 0.58, h: 0.22 },
-  { x: 0.38, y: 0.52, w: 0.55, h: 0.28 },
+  { x: 0.22, y: 0.68, w: 0.72, h: 0.26 },
+  { x: 0.26, y: 0.72, w: 0.68, h: 0.22 },
+  { x: 0.3, y: 0.55, w: 0.64, h: 0.28 },
 ];
 
 function luma(r: number, g: number, b: number): number {
@@ -246,9 +263,9 @@ function maskToOcrBlob(mask: Uint8Array, w: number, h: number): Promise<Blob | n
   }
   if (count < 8 || maxX < minX) return Promise.resolve(null);
 
-  // Extra left pad — leading digit is often clipped
-  const padX = Math.max(3, Math.floor((maxX - minX + 1) * 0.1));
-  const padY = 2;
+  // Extra left pad — digits before thousands '.' are often clipped
+  const padX = Math.max(6, Math.floor((maxX - minX + 1) * 0.18));
+  const padY = 3;
   minX = Math.max(0, minX - padX);
   minY = Math.max(0, minY - padY);
   maxX = Math.min(w - 1, maxX + padY);
@@ -383,9 +400,13 @@ export async function readTroopCount(tile: RgbaImage): Promise<OcrOutcome> {
     .map(([value, meta]) => ({
       value,
       raw: meta.raw,
-      score: meta.quality * 3 + meta.hits,
+      score:
+        meta.quality * 3 +
+        meta.hits +
+        // Prefer fuller readings (111111 over 111) when close
+        Math.min(40, String(value).length * 3),
     }))
-    .sort((a, b) => b.score - a.score);
+    .sort((a, b) => b.score - a.score || b.value - a.value);
 
   let best = ranked[0];
   // Prefer a non-round reading over "100"/"200" noise when both appeared
@@ -395,6 +416,16 @@ export async function readTroopCount(tile: RgbaImage): Promise<OcrOutcome> {
     );
     if (alt && alt.score >= best.score - 40) best = alt;
   }
+
+  // If a well-formed longer sibling exists (e.g. 111 vs 111111), keep the long one
+  const longer = ranked.find(
+    (r) =>
+      r.value !== best.value &&
+      String(r.value).endsWith(String(best.value)) &&
+      String(r.value).length > String(best.value).length &&
+      r.score >= best.score - 80,
+  );
+  if (longer) best = longer;
 
   return { count: best.value, text: best.raw || anyRaw };
 }

@@ -6,33 +6,164 @@
   background: #e4cfab;
 }
 
-/* Pergaminowe tło z Alrickiem i Ayrin — cała strona */
-:host::before {
-  content: '';
+/*
+  Tło pocięte na warstwy (public/bg/slices):
+  1) fill — kafelek pergaminu (cały viewport)
+  2) clouds — pas chmur przyklejony do dołu, rozciągany na szerokość
+  3) heroes — Alrick + Ayrin, zawsze w całości w prawym dolnym rogu
+  4) frame — ozdobne narożniki + krawędzie (9-slice)
+*/
+.page-bg {
+  --bg-frame: clamp(1.75rem, 2.2vw, 3.5rem);
+  --bg-hero-h: min(92vh, 56vw, 52rem);
   position: fixed;
   inset: 0;
   z-index: 0;
   pointer-events: none;
-  background-color: #e4cfab;
-  background-image: url('/bg/alrick-ayrin-creation.png');
-  background-repeat: no-repeat;
-  background-position: center top;
-  background-size: cover;
-  opacity: 1;
+  overflow: hidden;
+  background: #e4cfab;
 }
 
-:host::after {
-  content: '';
-  position: fixed;
+.page-bg__fill {
+  position: absolute;
   inset: 0;
-  z-index: 0;
-  pointer-events: none;
-  background: linear-gradient(
-    180deg,
-    rgba(228, 207, 171, 0.12) 0%,
-    rgba(228, 207, 171, 0.05) 40%,
-    rgba(228, 207, 171, 0.28) 100%
-  );
+  background-color: #e4cfab;
+  background-image: url('/bg/slices/fill.png');
+  background-repeat: repeat;
+  background-size: 18rem 18rem;
+  opacity: 0.92;
+}
+
+.page-bg__clouds {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: min(28vh, 16rem);
+  background-image: url('/bg/slices/clouds-bottom.png');
+  background-repeat: no-repeat;
+  background-position: center bottom;
+  background-size: 100% 100%;
+  mask-image: linear-gradient(180deg, transparent 0%, #000 28%, #000 100%);
+  -webkit-mask-image: linear-gradient(180deg, transparent 0%, #000 28%, #000 100%);
+}
+
+.page-bg__heroes {
+  position: absolute;
+  right: var(--bg-frame);
+  bottom: var(--bg-frame);
+  width: min(52vw, calc(var(--bg-hero-h) * 488 / 464), calc(100% - var(--bg-frame) * 2));
+  aspect-ratio: 488 / 464;
+  max-height: var(--bg-hero-h);
+  background-image: url('/bg/slices/heroes.png');
+  background-repeat: no-repeat;
+  background-position: right bottom;
+  background-size: 100% 100%;
+  /* miękkie wtapianie w pergamin od lewej */
+  mask-image: linear-gradient(90deg, transparent 0%, #000 14%, #000 100%);
+  -webkit-mask-image: linear-gradient(90deg, transparent 0%, #000 14%, #000 100%);
+}
+
+.page-bg__frame {
+  position: absolute;
+  inset: 0;
+}
+
+.page-bg__c,
+.page-bg__e {
+  position: absolute;
+  background-repeat: no-repeat;
+  background-size: 100% 100%;
+}
+
+.page-bg__c {
+  width: var(--bg-frame);
+  height: var(--bg-frame);
+}
+
+.page-bg__c--tl {
+  top: 0;
+  left: 0;
+  background-image: url('/bg/slices/corner-tl.png');
+}
+
+.page-bg__c--tr {
+  top: 0;
+  right: 0;
+  background-image: url('/bg/slices/corner-tr.png');
+}
+
+.page-bg__c--bl {
+  bottom: 0;
+  left: 0;
+  background-image: url('/bg/slices/corner-bl.png');
+}
+
+.page-bg__c--br {
+  bottom: 0;
+  right: 0;
+  background-image: url('/bg/slices/corner-br.png');
+}
+
+.page-bg__e--t,
+.page-bg__e--b {
+  left: var(--bg-frame);
+  right: var(--bg-frame);
+  height: var(--bg-frame);
+}
+
+.page-bg__e--t {
+  top: 0;
+  background-image: url('/bg/slices/edge-t.png');
+}
+
+.page-bg__e--b {
+  bottom: 0;
+  background-image: url('/bg/slices/edge-b.png');
+}
+
+.page-bg__e--l,
+.page-bg__e--r {
+  top: var(--bg-frame);
+  bottom: var(--bg-frame);
+  width: var(--bg-frame);
+}
+
+.page-bg__e--l {
+  left: 0;
+  background-image: url('/bg/slices/edge-l.png');
+}
+
+.page-bg__e--r {
+  right: 0;
+  background-image: url('/bg/slices/edge-r.png');
+}
+
+@media (max-width: 720px) {
+  .page-bg {
+    --bg-frame: 1.15rem;
+    --bg-hero-h: min(42vh, 18rem);
+  }
+
+  .page-bg__heroes {
+    opacity: 0.72;
+    max-width: 58vw;
+  }
+
+  .page-bg__clouds {
+    height: min(22vh, 9rem);
+  }
+}
+
+@media (min-width: 2560px) {
+  .page-bg {
+    --bg-frame: clamp(2.5rem, 1.6vw, 4rem);
+    --bg-hero-h: min(88vh, 58rem);
+  }
+
+  .page-bg__fill {
+    background-size: 22rem 22rem;
+  }
 }
 
 app-captains,
