@@ -1,6 +1,7 @@
 import { Component, computed, effect, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { I18nService } from '../i18n/i18n.service';
+import { NumberInputUxDirective } from '../shared/number-input-ux.directive';
 import { CAPTAINS } from './captains.data';
 import { Captain, FACTIONS } from './captain.model';
 import { clampLevel, shieldForLevel } from './shields';
@@ -133,7 +134,7 @@ function saveMap(
 
 @Component({
   selector: 'app-captains',
-  imports: [FormsModule],
+  imports: [FormsModule, NumberInputUxDirective],
   templateUrl: './captains-page.html',
   styleUrl: './captains-page.css',
 })

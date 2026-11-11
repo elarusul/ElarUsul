@@ -9,6 +9,7 @@ import {
 } from "@angular/core";
 import { FormsModule } from "@angular/forms";
 import { I18nService } from "../i18n/i18n.service";
+import { NumberInputUxDirective } from "../shared/number-input-ux.directive";
 import {
   ARMY_TYPES,
   ArmyType,
@@ -69,7 +70,7 @@ export interface ScanDraftRow {
 
 @Component({
   selector: "app-army",
-  imports: [FormsModule, DecimalPipe],
+  imports: [FormsModule, DecimalPipe, NumberInputUxDirective],
   templateUrl: "./army-page.html",
   styleUrl: "./army-page.css",
 })
@@ -443,20 +444,6 @@ export class ArmyPage {
     return Number.isFinite(n) ? Math.max(0, Math.trunc(n)) : 0;
   }
 
-  /** Czyści wiodące 0 w polu podczas wpisywania. */
-  protected stripLeadingZeros(event: Event): void {
-    const input = event.target as HTMLInputElement;
-    const raw = input.value;
-    if (!raw || raw === "0" || raw === "0.") return;
-    const stripped = raw.replace(/^0+(?=\d)/, "");
-    if (stripped === raw) return;
-    const pos = input.selectionStart ?? stripped.length;
-    const delta = raw.length - stripped.length;
-    input.value = stripped;
-    const nextPos = Math.max(0, pos - delta);
-    input.setSelectionRange(nextPos, nextPos);
-  }
-
   protected setNumber(
     signalRef: { set(value: number): void },
     value: string | number,
@@ -534,12 +521,6 @@ export class ArmyPage {
     }
     // 1.5, 2.5… wpisane / wklejone → najbliższa dozwolona (bez połów powyżej 1)
     this.attacks.set(normalizeAttacks(raw, 1));
-  }
-
-  /** Zaznacza wartosc przy focusie, zeby wpisanie cyfry nadpisalo np. 0. */
-  protected selectOnFocus(event: FocusEvent): void {
-    const input = event.target as HTMLInputElement;
-    void Promise.resolve().then(() => input.select());
   }
 
   protected setCurrent(

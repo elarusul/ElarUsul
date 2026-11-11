@@ -164,7 +164,6 @@
                 min="0"
                 [ngModel]="row.count"
                 (ngModelChange)="setScanCount(i, $event)"
-                (focus)="selectOnFocus($event)"
                 [name]="'scan-' + i"
               />
             </label>
@@ -228,8 +227,6 @@
                           min="0"
                           [ngModel]="current()[tier]?.[type] ?? 0"
                           (ngModelChange)="setCurrent(tier, type, $event)"
-                          (focus)="selectOnFocus($event)"
-                          (input)="stripLeadingZeros($event)"
                           [name]="'cur-' + tier + '-' + type"
                         />
                       </span>
@@ -385,8 +382,6 @@
                           min="0"
                           [ngModel]="currentMonsters()[tier]?.[race] ?? 0"
                           (ngModelChange)="setCurrentMonster(tier, race, $event)"
-                          (focus)="selectOnFocus($event)"
-                          (input)="stripLeadingZeros($event)"
                           [name]="'mcur-' + tier + '-' + race"
                         />
                       </span>

@@ -1,11 +1,12 @@
 import { Component, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { NumberInputUxDirective } from '../shared/number-input-ux.directive';
 import { ROLE_LABELS, TroopRole } from './troop-stats';
 import { FIELD_HINTS } from './field-hints';
 
 @Component({
   selector: 'app-stacking',
-  imports: [FormsModule],
+  imports: [FormsModule, NumberInputUxDirective],
   templateUrl: './stacking-page.html',
   styleUrl: './stacking-page.css',
 })
