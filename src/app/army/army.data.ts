@@ -39,7 +39,8 @@ export const GUARDS_MAX_TIER = 5;
  * Official minimum silver training cost per unit
  * (totalbattlewiki.com/troops/guardsmen — Training).
  * Floor before food deficit / incomplete Training Cost research.
- * Gryfy od G5 (4410 / 5210 / 6010).
+ * Same-tier proportions follow Leadership (1 / 1 / 2 / 20) with wiki rounding:
+ * melee = ranged, mounted ≈ 2× ranged, flying = 10× mounted (from G5).
  */
 export const FLOOR_SILVER: Record<number, Record<ArmyType, number>> = {
   1: { melee: 60, ranged: 60, mounted: 121, flying: 0 },
@@ -49,6 +50,8 @@ export const FLOOR_SILVER: Record<number, Record<ArmyType, number>> = {
   5: { melee: 221, ranged: 221, mounted: 441, flying: 4410 },
   6: { melee: 261, ranged: 261, mounted: 521, flying: 5210 },
   7: { melee: 301, ranged: 301, mounted: 601, flying: 6010 },
+  8: { melee: 341, ranged: 341, mounted: 681, flying: 6810 },
+  9: { melee: 381, ranged: 381, mounted: 761, flying: 7610 },
 };
 
 /** Default editable rates = official wiki floor. */
@@ -60,6 +63,8 @@ export const DEFAULT_RATES: Record<number, Record<ArmyType, number>> = {
   5: { ...FLOOR_SILVER[5] },
   6: { ...FLOOR_SILVER[6] },
   7: { ...FLOOR_SILVER[7] },
+  8: { ...FLOOR_SILVER[8] },
+  9: { ...FLOOR_SILVER[9] },
 };
 
 /** Domyślny Aktualny stan — puste (pierwsze uruchomienie / brak storage). */
@@ -106,30 +111,91 @@ export function cloneGrid(
 }
 
 /**
- * Scale all guardsmen rates from a single current G1 ranged (Łucznik) price.
- * ratio = currentG1Ranged / wikiFloorG1Ranged; every cell = round(wikiFloor × ratio).
+ * Optional helper: fill same-G rates from the entered Łucznik price.
+ *
+ * In-game same-tier relation (Leadership 1 / 2 / 20), observed in barracks:
+ * - Włócznik = Łucznik
+ * - Jeździec = 2 × Łucznik − 1
+ * - Gryf = 10 × Jeździec
+ *
+ * When Łucznik equals the official wiki floor for that G, keep exact wiki
+ * Training values (G1 floor is 121, not 2×60−1).
  */
 export function ratesFromRangedBase(
   rates: Record<number, Record<ArmyType, number>>,
   tiers: readonly number[],
 ): Record<number, Record<ArmyType, number>> {
-  const floorG1Ranged = FLOOR_SILVER[1]?.ranged ?? 0;
-  const currentG1Ranged = Math.max(0, Math.round(rates[1]?.ranged ?? 0));
-  const ratio = floorG1Ranged > 0 ? currentG1Ranged / floorG1Ranged : 0;
   const grid = emptyGrid(tiers);
   for (const tier of tiers) {
     const floor = FLOOR_SILVER[tier];
+    const currentRanged = Math.max(0, Math.round(rates[tier]?.ranged ?? 0));
+    const atOfficialFloor = !!floor && currentRanged === floor.ranged;
+    const mounted = atOfficialFloor
+      ? (floor.mounted ?? 0)
+      : currentRanged > 0
+        ? 2 * currentRanged - 1
+        : 0;
+    const flying = atOfficialFloor
+      ? (floor.flying ?? 0)
+      : 10 * mounted;
+
     for (const type of ARMY_TYPES) {
       if (!isTypeAvailable(type, tier)) {
         grid[tier][type] = 0;
         continue;
       }
-      if (!floor) {
-        grid[tier][type] = 0;
+      if (type === 'ranged' || type === 'melee') {
+        grid[tier][type] = currentRanged;
         continue;
       }
-      grid[tier][type] = Math.round((floor[type] ?? 0) * ratio);
+      if (type === 'mounted') {
+        grid[tier][type] = mounted;
+        continue;
+      }
+      grid[tier][type] = flying;
     }
   }
   return grid;
+}
+
+export type RatesOrigin = 'default' | 'derived' | 'manual';
+
+function rateGridsEqual(
+  a: Record<number, Record<ArmyType, number>>,
+  b: Record<number, Record<ArmyType, number>>,
+  tiers: readonly number[],
+): boolean {
+  for (const tier of tiers) {
+    for (const type of ARMY_TYPES) {
+      const av = isTypeAvailable(type, tier) ? (a[tier]?.[type] ?? 0) : 0;
+      const bv = isTypeAvailable(type, tier) ? (b[tier]?.[type] ?? 0) : 0;
+      if (av !== bv) return false;
+    }
+  }
+  return true;
+}
+
+export function ratesMatchOfficialFloor(
+  rates: Record<number, Record<ArmyType, number>>,
+  tiers: readonly number[],
+): boolean {
+  for (const tier of tiers) {
+    const floor = FLOOR_SILVER[tier];
+    if (!floor) return false;
+    for (const type of ARMY_TYPES) {
+      const expected = isTypeAvailable(type, tier) ? (floor[type] ?? 0) : 0;
+      if ((rates[tier]?.[type] ?? 0) !== expected) return false;
+    }
+  }
+  return true;
+}
+
+/** default = wiki floor; derived = matches przelicznik; otherwise manual. */
+export function classifyRatesOrigin(
+  rates: Record<number, Record<ArmyType, number>>,
+  tiers: readonly number[],
+): RatesOrigin {
+  if (ratesMatchOfficialFloor(rates, tiers)) return 'default';
+  if (rateGridsEqual(rates, ratesFromRangedBase(rates, tiers), tiers)) return 'derived';
+  return 'manual';
 }

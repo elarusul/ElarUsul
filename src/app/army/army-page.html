@@ -529,11 +529,7 @@
               {{ t()('army.rates') }}
               <span class="panel-actions tip-host">
                 <button type="button" class="linkish" (click)="resetRatesToFloor()">{{ t()('army.ratesReset') }}</button>
-                <button
-                  type="button"
-                  class="linkish"
-                  (click)="deriveRatesFromRanged()"
-                >
+                <button type="button" class="linkish" (click)="deriveRatesFromRanged()">
                   {{ t()('army.ratesFromRanged') }}
                 </button>
                 <button
@@ -552,18 +548,24 @@
               </span>
             </h2>
             <div class="table-wrap">
-              <table class="rates-table">
+              <table class="rates-table" [attr.data-rates-origin]="ratesOrigin()">
                 <thead>
                   <tr>
                     <th></th>
                     @for (type of types; track type) {
-                      <th [class.rate-base-head]="type === 'ranged'">
+                      <th
+                        [class.rate-base-head]="type === 'ranged' && ratesOrigin() !== 'default'"
+                        [class.rate-derived-col]="type === 'ranged' && ratesOrigin() === 'derived'"
+                      >
                         <span class="th-pl">{{ typeLabel(type) }}</span>
                         @if (i18n.lang() === 'pl') {
                           <span class="th-en">{{ typeLabelEn(type) }}</span>
                         }
-                        @if (type === 'ranged') {
-                          <span class="rate-base-note">G1 · {{ t()('army.ratesFromRanged.base') }}</span>
+                        @if (type === 'ranged' && ratesOrigin() === 'derived') {
+                          <span class="rate-base-note">{{ t()('army.ratesFromRanged.base') }}</span>
+                        }
+                        @if (type === 'ranged' && ratesOrigin() === 'manual') {
+                          <span class="rate-base-note rate-base-note-manual">{{ t()('army.ratesFromRanged.manual') }}</span>
                         }
                       </th>
                     }
@@ -574,16 +576,18 @@
                     <tr>
                       <th>G{{ tier }}</th>
                       @for (type of types; track type) {
-                        <td [class.locked]="!available(type, tier)">
+                        <td
+                          [class.locked]="!available(type, tier)"
+                          [class.rate-derived-col]="type === 'ranged' && ratesOrigin() === 'derived' && available(type, tier)"
+                        >
                           @if (available(type, tier)) {
                             <input
                               type="number"
                               min="0"
-                              [class.rate-base-input]="tier === 1 && type === 'ranged'"
+                              [class.rate-base-input]="type === 'ranged' && ratesOrigin() === 'derived'"
                               [ngModel]="rates()[tier]?.[type] ?? 0"
                               (ngModelChange)="setRate(tier, type, $event)"
                               [name]="'rate-' + tier + '-' + type"
-                              [attr.aria-label]="tier === 1 && type === 'ranged' ? t()('army.ratesFromRanged.base') : null"
                             />
                           } @else {
                             -

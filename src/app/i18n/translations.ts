@@ -96,10 +96,11 @@ export const UI_PL: Dict = {
   'army.silverFold.hide': 'Ukryj',
   'army.rates': 'Stawki srebra wojska',
   'army.ratesReset': 'Przywróć domyślne',
-  'army.ratesFromRanged': 'Przelicz z Łucznika G1',
+  'army.ratesFromRanged': 'Przelicz z Łuczników',
   'army.ratesFromRanged.base': 'baza',
+  'army.ratesFromRanged.manual': 'korekta ręczna',
   'army.ratesFromRanged.hint':
-    'Wpisz aktualną stawkę w polu łucznika G1 (oznaczone przy nagłówku jako baza), potem kliknij „Przelicz z Łucznika G1”. Reszta wojska G wyliczy się z ratio = Twoja stawka / stawka wiki. Następnie możesz poprawić dowolną komórkę ręcznie.',
+    'Opcjonalnie: wpisz stawkę łucznika w każdym G (kolumna „baza”) i kliknij „Przelicz z Łuczników”. W tej samej warstwie: włócznik = łucznik, jeździec = 2 × łucznik − 1, gryf = 10 × jeździec. Potem możesz poprawić dowolną komórkę ręcznie.',
   'army.ratesHint':
     'Najniższe stawki treningu pochodzą z Total Battle Wiki i obowiązują przy maksymalnie rozwiniętych badaniach Training Cost. Jeśli nie masz ich w pełni ukończonych albo brakuje Ci jedzenia, trening będzie droższy. W takiej sytuacji popraw stawki ręcznie.',
   'army.monsterRates': 'Stawki potworów',
@@ -223,10 +224,11 @@ export const UI_EN: Dict = {
   'army.silverFold.hide': 'Hide',
   'army.rates': 'Troop silver rates',
   'army.ratesReset': 'Reset defaults',
-  'army.ratesFromRanged': 'Fill from G1 ranged',
+  'army.ratesFromRanged': 'Fill from Ranged',
   'army.ratesFromRanged.base': 'base',
+  'army.ratesFromRanged.manual': 'manual edit',
   'army.ratesFromRanged.hint':
-    'Enter your current rate in the G1 ranged field (marked as base under the column header), then click “Fill from G1 ranged”. All other G troop rates are scaled by ratio = your rate / wiki rate. Afterwards you can edit any cell manually.',
+    'Optional: enter the ranged rate for each G (the “base” column) and click “Fill from Ranged”. In that same G tier: melee = ranged, mounted = 2 × ranged − 1, griffin = 10 × mounted. Afterwards you can edit any cell manually.',
   'army.ratesHint':
     'The lowest training rates come from Total Battle Wiki and apply when Training Cost research is fully maxed. If you have not completed it fully or you are short on food, training will cost more. In that case, edit the rates manually.',
   'army.monsterRates': 'Monster rates',

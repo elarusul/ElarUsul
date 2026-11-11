@@ -260,10 +260,19 @@ table input {
   opacity: 0.9;
 }
 
+.rate-base-note-manual {
+  color: #7a5530;
+  letter-spacing: 0.04em;
+}
+
 .rates-table input.rate-base-input {
   border-color: #a67c3a;
   box-shadow: 0 0 0 1px rgba(166, 124, 58, 0.28);
   background: #fffdf8;
+}
+
+.rates-table .rate-derived-col {
+  background: rgba(141, 106, 56, 0.06);
 }
 
 .types {

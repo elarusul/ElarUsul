@@ -16,6 +16,7 @@ import {
   FLOOR_SILVER,
   FLYING_MIN_TIER,
   GUARDS_MAX_TIER,
+  classifyRatesOrigin,
   cloneGrid,
   emptyGrid,
   emptyRow,
@@ -228,6 +229,10 @@ export class ArmyPage {
   );
 
   protected readonly tiers = computed(() => this.plan().tiers);
+
+  protected readonly ratesOrigin = computed(() =>
+    classifyRatesOrigin(this.rates(), this.tiers()),
+  );
   protected readonly monsterTiers = computed(() => this.monsterPlan().tiers);
 
   constructor() {
