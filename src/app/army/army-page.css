@@ -88,7 +88,7 @@
   padding: 0.625rem 0.75rem;
   border: 1px solid #c4a882;
   border-radius: 0.625rem;
-  background: #fff6e4;
+  background: rgba(255, 246, 228, 0.64);
   box-shadow:
     0 1px 2px rgba(90, 70, 40, 0.1),
     0 0 0 1px rgba(168, 148, 120, 0.22);
@@ -738,7 +738,7 @@ table input {
 
 /* Delikatne kolorowe tła + ramka w tym samym tonie */
 .block.target {
-  background: #eef4fc;
+  background: rgba(238, 244, 252, 0.64);
   border: 2px solid #1f6fd8;
   box-shadow:
     0 1px 3px rgba(31, 111, 216, 0.16),
@@ -746,7 +746,7 @@ table input {
 }
 
 .block.current {
-  background: #eef6eb;
+  background: rgba(238, 246, 235, 0.64);
   border: 1.5px solid #8f9a72;
   box-shadow:
     0 1px 3px rgba(100, 110, 70, 0.12),
@@ -754,7 +754,7 @@ table input {
 }
 
 .block.buy {
-  background: #fceee9;
+  background: rgba(252, 238, 233, 0.64);
   border: 1.5px solid #b77e63;
   box-shadow:
     0 1px 3px rgba(183, 126, 99, 0.14),
