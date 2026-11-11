@@ -478,11 +478,10 @@
                 @for (race of monsterRaces; track race) {
                   <td [class.locked]="!raceEnabled(race)">
                     @if (raceEnabled(race)) {
-                      <span class="cell-with-icon">
+                      <span class="cell-with-icon" [attr.title]="monsterName(tier, race)">
                         <img class="troop-icon sm" [src]="monsterTierIcon(race, tier)" [alt]="monsterName(tier, race)" width="36" height="36" />
                         <span>{{ monsterTargets()[tier][race] | number: '1.0-0' }}</span>
                       </span>
-                      <small class="cell-meta">{{ monsterName(tier, race) }}</small>
                     } @else {
                       -
                     }

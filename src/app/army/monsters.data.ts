@@ -16,7 +16,7 @@ export const MONSTER_MIN_TIER = 3;
 export const MONSTER_MAX_TIER = 9;
 
 /** Tymczasowy limit warstw potworów w kalkulatorze (później rozszerzymy). */
-export const MONSTER_PLAN_MAX_TIER = 4;
+export const MONSTER_PLAN_MAX_TIER = 5;
 
 /** Official Dominance cost per unit. */
 export const MONSTER_DOMINANCE: Record<number, Record<MonsterRace, number>> = {

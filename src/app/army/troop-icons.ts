@@ -73,10 +73,10 @@ const MONSTERS_BY_TIER: Record<number, Record<MonsterRace, string>> = {
     dragon: 'magic-dragon.png',
   },
   5: {
-    beast: 'fearsome-manticore.webp',
-    giant: 'ettin.webp',
-    elemental: 'flaming-centaur.webp',
-    dragon: 'desert-vanquisher.webp',
+    beast: 'fearsome-manticore.png',
+    giant: 'ettin.png',
+    elemental: 'flaming-centaur.png',
+    dragon: 'desert-vanquisher.png',
   },
   6: {
     beast: 'jungle-destroyer.webp',

@@ -61,7 +61,7 @@ const DEFAULT_MONSTERS_ENABLED: Record<MonsterRace, boolean> = {
 /** Pierwsze uruchomienie (pusty storage): zera — dane pojawiają się po wczytaniu / wpisaniu. */
 export function defaultArmyState(): ArmyPersistedState {
   const tiers = [...DEFAULT_TIERS];
-  const monsterTiers = [3, 4];
+  const monsterTiers = [3, 4, 5];
   return {
     v: STORAGE_VERSION,
     targetCapacity: 0,
@@ -69,7 +69,7 @@ export function defaultArmyState(): ArmyPersistedState {
     attacks: 1,
     maxTier: 5,
     maxTierS: 5,
-    maxTierM: 4,
+    maxTierM: 5,
     pyramidRatio: 2,
     roundMonstersToTens: true,
     enabled: { ...DEFAULT_ENABLED },

@@ -243,8 +243,6 @@ table input {
 }
 
 .silver-row .rates-table thead th.rate-base-head {
-  height: auto;
-  min-height: 2.35rem;
   vertical-align: bottom;
 }
 
@@ -605,7 +603,9 @@ table input {
 }
 
 .silver-row thead th {
-  height: 2rem;
+  height: auto;
+  min-height: 2.6rem;
+  vertical-align: bottom;
 }
 
 .silver-row thead th:first-child,
@@ -938,13 +938,24 @@ td {
   vertical-align: middle;
 }
 
+.board-row table thead tr {
+  height: 2.1rem;
+}
+
+.board-row table tbody tr {
+  height: 2.85rem;
+}
+
 .board-row table thead th {
-  height: 1.95rem;
+  height: 2.1rem;
+  max-height: 2.1rem;
+  overflow: hidden;
 }
 
 .board-row table tbody th,
 .board-row table tbody td {
   height: 2.85rem;
+  max-height: 2.85rem;
   padding-top: 4px;
   padding-bottom: 4px;
   vertical-align: middle;
@@ -959,7 +970,16 @@ td {
 .board-row .block.current table tbody td,
 .board-row .block.target table tbody td,
 .board-row .block.buy table tbody td {
-  overflow: visible;
+  overflow: hidden;
+}
+
+.board-row .table-wrap {
+  display: flex;
+  flex-direction: column;
+}
+
+.board-row .table-wrap > table {
+  flex: 1 1 auto;
 }
 
 /* Spinners zjadają miejsce na cyfry — liczby wpisujemy z klawiatury. */
