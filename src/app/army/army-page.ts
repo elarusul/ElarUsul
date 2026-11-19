@@ -690,9 +690,7 @@ export class ArmyPage {
     try {
       const result = await scanTroopScreenshot(file, {
         guardsMaxTier: this.maxTier(),
-        guardsMinTier: this.minTier(),
         monstersMaxTier: this.maxTierM(),
-        monstersMinTier: this.minTierM(),
         onProgress: (message) => this.scanProgress.set(message),
         onHit: (hit) => this.appendScanHit(hit),
       });
@@ -785,18 +783,12 @@ export class ArmyPage {
 
     this.current.update((grid) => {
       const next = cloneGrid(grid, this.tiers());
-      const seen = new Set<string>();
       for (const row of rows) {
         if (row.hit.ref.kind !== "guards") continue;
         if (!isArmyType(row.hit.ref.key)) continue;
         const tier = row.hit.ref.tier;
         if (!next[tier] || !isTypeAvailable(row.hit.ref.key, tier)) continue;
-        const id = `${tier}:${row.hit.ref.key}`;
-        if (!seen.has(id)) {
-          next[tier][row.hit.ref.key] = 0;
-          seen.add(id);
-        }
-        next[tier][row.hit.ref.key] += row.count;
+        next[tier][row.hit.ref.key] = row.count;
       }
       return next;
     });
