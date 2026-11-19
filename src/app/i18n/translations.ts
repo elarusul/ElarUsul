@@ -40,6 +40,7 @@ export const UI_PL: Dict = {
   'army.attacks.tip':
     'Ile marszów planujesz: 0.5 (połowa), potem 1, 2, 3… Docelowe ilości i „do dokupienia” są mnożone przez tę liczbę (stan aktualny bez zmian). Pojemność / Dominance nadal dotyczą jednego marszu.',
   'army.tierGroupG': 'Tier gwardzistów',
+  'army.walletGroup': 'Limit zasobów do wydania',
   'army.tierGroupM': 'Tier potworów',
   'army.minTier': 'Min',
   'army.minTier.tipTitle': 'Min tier G',
@@ -120,6 +121,18 @@ export const UI_PL: Dict = {
   'army.monsterValue': 'Wartość potworów (aktualny stan)',
   'army.silver': 'Srebro',
   'army.dragonCoins': 'Smocze monety',
+  'army.wallet.coins': 'Smocze monety',
+  'army.wallet.silver': 'Srebro',
+  'army.wallet.placeholder': 'Brak limitu',
+  'army.wallet.silver.tipTitle': 'Srebro',
+  'army.wallet.silver.tip':
+    'Ile srebra możesz wydać na wojska i potwory. Puste pole nie ogranicza planu.',
+  'army.wallet.coins.tipTitle': 'Smocze monety',
+  'army.wallet.coins.tip':
+    'Ile smoczych monet możesz wydać na potwory. Puste pole nie ogranicza planu.',
+  'army.wallet.tip':
+    'Ile masz teraz. Puste pole nie ogranicza planu. Wpisana liczba przycina cel do największego składu w tych samych proporcjach, jaki da się dokupić.',
+  'army.budgetTrim': 'Cel przycięty do posiadanego srebra i smoczych monet.',
   'army.valueFoot': 'Razem: <strong>%total%</strong> srebra (aktualny stan × stawki)',
   'army.monsterValueFoot':
     'Razem: <strong>%silver%</strong> srebra + <strong>%coins%</strong> smoczych monet',
@@ -178,6 +191,7 @@ export const UI_EN: Dict = {
   'army.attacks.tip':
     'How many marches you plan: 0.5 (half), then 1, 2, 3…. Target amounts and “to buy” are multiplied by this number (current stock stays as entered). Capacity / Dominance still describe a single march.',
   'army.tierGroupG': 'Guardsmen tier',
+  'army.walletGroup': 'Resource spending limit',
   'army.tierGroupM': 'Monster tier',
   'army.minTier': 'Min',
   'army.minTier.tipTitle': 'Min tier G',
@@ -258,6 +272,18 @@ export const UI_EN: Dict = {
   'army.monsterValue': 'Monster value (current state)',
   'army.silver': 'Silver',
   'army.dragonCoins': 'Dragon coins',
+  'army.wallet.coins': 'Dragon coins',
+  'army.wallet.silver': 'Silver',
+  'army.wallet.placeholder': 'No limit',
+  'army.wallet.silver.tipTitle': 'Silver',
+  'army.wallet.silver.tip':
+    'How much silver you can spend on guards and monsters. An empty field does not limit the plan.',
+  'army.wallet.coins.tipTitle': 'Dragon coins',
+  'army.wallet.coins.tip':
+    'How many dragon coins you can spend on monsters. An empty field does not limit the plan.',
+  'army.wallet.tip':
+    'How much you have. An empty field does not limit the plan. A number trims the target to the largest same-proportion army you can afford.',
+  'army.budgetTrim': 'Target trimmed to the silver and dragon coins you have.',
   'army.valueFoot': 'Total: <strong>%total%</strong> silver (current state × rates)',
   'army.monsterValueFoot':
     'Total: <strong>%silver%</strong> silver + <strong>%coins%</strong> dragon coins',

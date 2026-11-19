@@ -140,6 +140,66 @@
       </div>
     </div>
 
+    <div class="tier-pair tier-pair-wallet">
+      <span class="tier-pair-title">{{ t()('army.walletGroup') }}</span>
+      <div class="wallets">
+        <div class="wallet-field">
+          <span class="label-row">
+            {{ t()('army.tier') }}
+            <button type="button" class="info" [class.is-open]="openHint() === 'walletSilver'" [attr.aria-label]="t()('army.info')" (click)="toggleHint('walletSilver', $event)">i</button>
+          </span>
+          @if (openHint() === 'walletSilver') {
+            <span class="tip" (click)="$event.stopPropagation()">
+              <strong>{{ t()('army.wallet.silver.tipTitle') }}</strong>
+              {{ t()('army.wallet.silver.tip') }}
+            </span>
+          }
+          <div class="wallet">
+            <span class="wallet-icon wallet-icon-art" aria-hidden="true">
+              <img src="currencies/silver.png" alt="" (error)="hideBrokenIcon($event)" />
+            </span>
+            <input
+              type="number"
+              min="0"
+              name="wallet-silver"
+              [attr.placeholder]="t()('army.wallet.placeholder')"
+              [attr.aria-label]="t()('army.wallet.silver')"
+              [ngModel]="silverOwned()"
+              (ngModelChange)="setOwned(silverOwned, $event)"
+              (click)="$event.stopPropagation()"
+            />
+          </div>
+        </div>
+        <div class="wallet-field">
+          <span class="label-row">
+            {{ t()('army.tier') }}
+            <button type="button" class="info" [class.is-open]="openHint() === 'walletCoins'" [attr.aria-label]="t()('army.info')" (click)="toggleHint('walletCoins', $event)">i</button>
+          </span>
+          @if (openHint() === 'walletCoins') {
+            <span class="tip" (click)="$event.stopPropagation()">
+              <strong>{{ t()('army.wallet.coins.tipTitle') }}</strong>
+              {{ t()('army.wallet.coins.tip') }}
+            </span>
+          }
+          <div class="wallet">
+            <span class="wallet-icon wallet-icon-art" aria-hidden="true">
+              <img src="currencies/dragon-coin.png" alt="" (error)="hideBrokenIcon($event)" />
+            </span>
+            <input
+              type="number"
+              min="0"
+              name="wallet-coins"
+              [attr.placeholder]="t()('army.wallet.placeholder')"
+              [attr.aria-label]="t()('army.wallet.coins')"
+              [ngModel]="coinsOwned()"
+              (ngModelChange)="setOwned(coinsOwned, $event)"
+              (click)="$event.stopPropagation()"
+            />
+          </div>
+        </div>
+      </div>
+    </div>
+
     <label class="tool tool-tier">
       <span class="label-row">
         {{ t()('army.attacks') }}
@@ -391,11 +451,14 @@
       </div>
       <p class="foot">
         {{ t()('army.capUsed') }} <strong>{{ neededLeadership() | number: '1.0-0' }}</strong>
-        @if (attacks() !== 1) {
+        @if (attacks() !== 1 && !budgetTrimmed()) {
           <span class="muted"> ({{ plan().leadershipUsed | number: '1.0-0' }} × {{ attacks() }})</span>
         }
         / {{ targetCapacity() | number: '1.0-0' }}
       </p>
+      @if (budgetTrimmed()) {
+        <p class="foot budget-note">{{ t()('army.budgetTrim') }}</p>
+      }
     </article>
     </div>
 
@@ -546,11 +609,14 @@
       </div>
       <p class="foot">
         {{ t()('army.domUsed') }} <strong>{{ neededDominance() | number: '1.0-0' }}</strong>
-        @if (attacks() !== 1) {
+        @if (attacks() !== 1 && !budgetTrimmed()) {
           <span class="muted"> ({{ monsterPlan().dominanceUsed | number: '1.0-0' }} × {{ attacks() }})</span>
         }
         / {{ dominance() | number: '1.0-0' }}
       </p>
+      @if (budgetTrimmed()) {
+        <p class="foot budget-note">{{ t()('army.budgetTrim') }}</p>
+      }
     </article>
     </div>
   </div>

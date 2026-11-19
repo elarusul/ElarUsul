@@ -32,6 +32,7 @@ import {
   monsterGridTotals,
   planArmyTargets,
   planMonsterTargets,
+  limitTargetsByBudgets,
   normalizeAttacks,
   scaleGrid,
   scaleMonsterGrid,
@@ -153,6 +154,8 @@ export class ArmyPage {
   protected readonly targetCapacity = signal(SAVED.targetCapacity);
   protected readonly dominance = signal(SAVED.dominance);
   protected readonly attacks = signal(normalizeAttacks(SAVED.attacks ?? 1));
+  protected readonly silverOwned = signal<number | null>(SAVED.silverOwned);
+  protected readonly coinsOwned = signal<number | null>(SAVED.coinsOwned);
   protected readonly maxTier = signal(
     Math.min(GUARDS_MAX_TIER, Math.max(1, SAVED.maxTier)),
   );
@@ -296,6 +299,8 @@ export class ArmyPage {
         monsterSilverRates: this.monsterSilverRates(),
         monsterCoinRates: this.monsterCoinRates(),
         showSilver: this.showSilver(),
+        silverOwned: this.silverOwned(),
+        coinsOwned: this.coinsOwned(),
       });
     });
   }
@@ -343,17 +348,29 @@ export class ArmyPage {
     () => this.monsterPlan().targets,
   );
 
-  /** Targets × attacks — stockpile needed for N identical marches. */
-  protected readonly targets = computed(() =>
-    scaleGrid(this.marchTargets(), this.tiers(), this.attacks()),
+  /** Targets × attacks, then cut to the silver and dragon-coin budgets. */
+  protected readonly limited = computed(() =>
+    limitTargetsByBudgets({
+      guardTargets: scaleGrid(this.marchTargets(), this.tiers(), this.attacks()),
+      guardCurrent: this.current(),
+      guardTiers: this.tiers(),
+      guardRates: this.rates(),
+      monsterTargets: scaleMonsterGrid(
+        this.marchMonsterTargets(),
+        this.monsterTiers(),
+        this.attacks(),
+      ),
+      monsterCurrent: this.currentMonsters(),
+      monsterTiers: this.monsterTiers(),
+      monsterSilverRates: this.monsterSilverRates(),
+      monsterCoinRates: this.monsterCoinRates(),
+      limits: { silver: this.silverOwned(), coins: this.coinsOwned() },
+    }),
   );
-  protected readonly monsterTargets = computed(() =>
-    scaleMonsterGrid(
-      this.marchMonsterTargets(),
-      this.monsterTiers(),
-      this.attacks(),
-    ),
-  );
+
+  protected readonly targets = computed(() => this.limited().guards);
+  protected readonly monsterTargets = computed(() => this.limited().monsters);
+  protected readonly budgetTrimmed = computed(() => this.limited().trimmed);
 
   protected readonly targetTotals = computed(() =>
     gridTotals(this.targets(), this.tiers()),
@@ -375,12 +392,16 @@ export class ArmyPage {
     ),
   );
 
-  protected readonly neededLeadership = computed(
-    () => this.plan().leadershipUsed * this.attacks(),
+  protected readonly neededLeadership = computed(() =>
+    this.budgetTrimmed()
+      ? measureLeadership(this.targets(), this.tiers())
+      : this.plan().leadershipUsed * this.attacks(),
   );
 
-  protected readonly neededDominance = computed(
-    () => this.monsterPlan().dominanceUsed * this.attacks(),
+  protected readonly neededDominance = computed(() =>
+    this.budgetTrimmed()
+      ? measureDominance(this.monsterTargets(), this.monsterTiers())
+      : this.monsterPlan().dominanceUsed * this.attacks(),
   );
 
   protected readonly toBuyTotals = computed(() =>
@@ -443,6 +464,31 @@ export class ArmyPage {
 
   protected raceEnabled(race: MonsterRace): boolean {
     return this.monstersEnabled()[race];
+  }
+
+  protected setOwned(
+    signalRef: { set(value: number | null): void },
+    value: string | number | null,
+  ): void {
+    if (value == null) {
+      signalRef.set(null);
+      return;
+    }
+    if (typeof value === "number") {
+      signalRef.set(Number.isFinite(value) ? Math.max(0, Math.trunc(value)) : null);
+      return;
+    }
+    const raw = String(value).trim();
+    if (!raw) {
+      signalRef.set(null);
+      return;
+    }
+    const n = Number(raw.replace(/^0+(?=\d)/, ""));
+    signalRef.set(Number.isFinite(n) ? Math.max(0, Math.trunc(n)) : null);
+  }
+
+  protected hideBrokenIcon(event: Event): void {
+    (event.target as HTMLImageElement).style.display = "none";
   }
 
   /** Usuwa zera wiodące (np. 05 → 5); samo 0 zostaje. Liczby całkowite ≥ 0. */

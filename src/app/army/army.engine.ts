@@ -373,3 +373,183 @@ export function costForMonsterGrid(
 
   return { perRace, cells, total };
 }
+
+export interface BudgetLimits {
+  /** Null means this currency does not cap the plan. */
+  silver: number | null;
+  coins: number | null;
+}
+
+export interface BudgetFitResult {
+  guards: ArmyGrid;
+  monsters: MonsterGrid;
+  /** True when a set budget cut the ideal pyramid. */
+  trimmed: boolean;
+}
+
+function scaleArmyBuy(buy: ArmyGrid, tiers: number[], scale: number): ArmyGrid {
+  const out: ArmyGrid = {};
+  for (const tier of tiers) {
+    out[tier] = emptyRow();
+    for (const type of ARMY_TYPES) {
+      out[tier][type] = Math.floor(Math.max(0, buy[tier]?.[type] ?? 0) * scale);
+    }
+  }
+  return out;
+}
+
+function scaleMonsterBuy(buy: MonsterGrid, tiers: number[], scale: number): MonsterGrid {
+  const out = emptyMonsterGrid(tiers);
+  for (const tier of tiers) {
+    for (const race of MONSTER_RACES) {
+      const raw = Math.floor(Math.max(0, buy[tier]?.[race] ?? 0) * scale);
+      out[tier][race] = roundDownToTen(raw);
+    }
+  }
+  return out;
+}
+
+function purchaseCost(
+  guards: ArmyGrid,
+  guardTiers: number[],
+  guardRates: ArmyGrid,
+  monsters: MonsterGrid,
+  monsterTiers: number[],
+  monsterSilverRates: MonsterGrid,
+  monsterCoinRates: MonsterGrid,
+): { silver: number; coins: number } {
+  return {
+    silver:
+      silverForGrid(guards, guardRates, guardTiers, true).total +
+      costForMonsterGrid(monsters, monsterSilverRates, monsterTiers, true).total,
+    coins: costForMonsterGrid(monsters, monsterCoinRates, monsterTiers, true).total,
+  };
+}
+
+function withinBudget(
+  cost: { silver: number; coins: number },
+  limits: BudgetLimits,
+): boolean {
+  if (limits.silver != null && cost.silver > limits.silver) return false;
+  if (limits.coins != null && cost.coins > limits.coins) return false;
+  return true;
+}
+
+function mergeArmy(
+  ideal: ArmyGrid,
+  current: ArmyGrid,
+  buy: ArmyGrid,
+  tiers: number[],
+): ArmyGrid {
+  const out: ArmyGrid = {};
+  for (const tier of tiers) {
+    out[tier] = emptyRow();
+    for (const type of ARMY_TYPES) {
+      const goal = ideal[tier]?.[type] ?? 0;
+      const owned = current[tier]?.[type] ?? 0;
+      out[tier][type] = Math.min(goal, owned + (buy[tier]?.[type] ?? 0));
+    }
+  }
+  return out;
+}
+
+function mergeMonsters(
+  ideal: MonsterGrid,
+  current: MonsterGrid,
+  buy: MonsterGrid,
+  tiers: number[],
+): MonsterGrid {
+  const out = emptyMonsterGrid(tiers);
+  for (const tier of tiers) {
+    for (const race of MONSTER_RACES) {
+      const goal = ideal[tier]?.[race] ?? 0;
+      const owned = current[tier]?.[race] ?? 0;
+      out[tier][race] = Math.min(goal, owned + (buy[tier]?.[race] ?? 0));
+    }
+  }
+  return out;
+}
+
+/**
+ * Largest pyramid-shaped purchase that fits the silver and dragon-coin limits.
+ * A null limit is ignored. Guards spend silver only; monsters spend both.
+ * When only coins are limited, guards stay at the full target.
+ */
+export function limitTargetsByBudgets(input: {
+  guardTargets: ArmyGrid;
+  guardCurrent: ArmyGrid;
+  guardTiers: number[];
+  guardRates: ArmyGrid;
+  monsterTargets: MonsterGrid;
+  monsterCurrent: MonsterGrid;
+  monsterTiers: number[];
+  monsterSilverRates: MonsterGrid;
+  monsterCoinRates: MonsterGrid;
+  limits: BudgetLimits;
+}): BudgetFitResult {
+  const guardBuy = subtractGrids(input.guardTargets, input.guardCurrent, input.guardTiers);
+  const monsterBuy = subtractMonsterGrids(
+    input.monsterTargets,
+    input.monsterCurrent,
+    input.monsterTiers,
+  );
+  const full = purchaseCost(
+    guardBuy,
+    input.guardTiers,
+    input.guardRates,
+    monsterBuy,
+    input.monsterTiers,
+    input.monsterSilverRates,
+    input.monsterCoinRates,
+  );
+  if (withinBudget(full, input.limits)) {
+    return {
+      guards: input.guardTargets,
+      monsters: input.monsterTargets,
+      trimmed: false,
+    };
+  }
+
+  const coinsOnly = input.limits.silver == null && input.limits.coins != null;
+  const fits = (scale: number): boolean => {
+    const guardScale = coinsOnly ? 1 : scale;
+    const monsterScale = scale;
+    return withinBudget(
+      purchaseCost(
+        scaleArmyBuy(guardBuy, input.guardTiers, guardScale),
+        input.guardTiers,
+        input.guardRates,
+        scaleMonsterBuy(monsterBuy, input.monsterTiers, monsterScale),
+        input.monsterTiers,
+        input.monsterSilverRates,
+        input.monsterCoinRates,
+      ),
+      input.limits,
+    );
+  };
+
+  let lo = 0;
+  let hi = 1;
+  for (let i = 0; i < 28; i++) {
+    const mid = (lo + hi) / 2;
+    if (fits(mid)) lo = mid;
+    else hi = mid;
+  }
+
+  const guardScale = coinsOnly ? 1 : lo;
+  return {
+    guards: mergeArmy(
+      input.guardTargets,
+      input.guardCurrent,
+      scaleArmyBuy(guardBuy, input.guardTiers, guardScale),
+      input.guardTiers,
+    ),
+    monsters: mergeMonsters(
+      input.monsterTargets,
+      input.monsterCurrent,
+      scaleMonsterBuy(monsterBuy, input.monsterTiers, lo),
+      input.monsterTiers,
+    ),
+    trimmed: true,
+  };
+}

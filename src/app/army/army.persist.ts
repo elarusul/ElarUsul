@@ -46,6 +46,10 @@ export interface ArmyPersistedState {
   monsterSilverRates: MonsterGrid;
   monsterCoinRates: MonsterGrid;
   showSilver: boolean;
+  /** Silver on hand. Null = do not cap the plan. */
+  silverOwned: number | null;
+  /** Dragon coins on hand. Null = do not cap the plan. */
+  coinsOwned: number | null;
 }
 
 const DEFAULT_ENABLED: Record<ArmyType, boolean> = {
@@ -92,7 +96,16 @@ export function defaultArmyState(): ArmyPersistedState {
       [3, 4, 5, 6, 7, 8, 9],
     ),
     showSilver: false,
+    silverOwned: null,
+    coinsOwned: null,
   };
+}
+
+function asOptionalAmount(value: unknown): number | null {
+  if (value == null || value === '') return null;
+  const n = typeof value === 'number' ? value : Number(value);
+  if (!Number.isFinite(n) || n < 0) return null;
+  return Math.trunc(n);
 }
 
 function asFiniteNumber(value: unknown, fallback: number): number {
@@ -265,6 +278,8 @@ export function loadArmyState(): ArmyPersistedState {
         defaults.monsterCoinRates,
       ),
       showSilver: asBoolean(parsed.showSilver, defaults.showSilver),
+      silverOwned: asOptionalAmount(parsed.silverOwned),
+      coinsOwned: asOptionalAmount(parsed.coinsOwned),
     };
   } catch {
     return defaults;

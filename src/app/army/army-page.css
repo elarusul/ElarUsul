@@ -137,6 +137,157 @@
   min-width: 0;
 }
 
+.wallets {
+  display: flex;
+  flex: 1 1 auto;
+  gap: 0.35rem;
+  align-items: end;
+  width: 100%;
+  min-width: 0;
+}
+
+.wallet-field {
+  position: relative;
+  display: flex;
+  flex: 1 1 0;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  color: #6d5336;
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  line-height: 1.25;
+  text-transform: uppercase;
+}
+
+.wallet-field:last-child .tip {
+  left: auto;
+  right: 0;
+}
+
+.tier-pair-wallet .wallet {
+  flex: 1 1 auto;
+  width: 100%;
+  min-width: 0;
+  height: auto;
+  gap: 0.2rem;
+  padding: 0.12rem 0.28rem 0.12rem 0.1rem;
+  border: 1px solid #c4a882;
+  border-radius: 0.35rem;
+  background: #fffcf5;
+  box-sizing: border-box;
+}
+
+.tier-pair-wallet .wallet-icon {
+  width: 1.15rem;
+  height: 1.15rem;
+}
+
+.tier-pair-wallet .wallet input {
+  width: 0;
+  min-width: 0;
+  max-width: none;
+  flex: 1 1 auto;
+  font-size: 0.75rem;
+  line-height: 1.2;
+}
+
+.wallet {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 0.35rem;
+  height: calc(0.85rem * 1.2 + 0.75rem + 2px);
+  padding: 0 0.45rem 0 0.2rem;
+  border: 1px solid #eadcc6;
+  border-radius: 0.5rem;
+  background: #f6f0e4;
+  box-shadow: none;
+}
+
+.wallet-icon {
+  display: grid;
+  flex: 0 0 auto;
+  place-items: center;
+  width: 1.35rem;
+  height: 1.35rem;
+  overflow: hidden;
+  border: 1px solid #f2d48a;
+  border-radius: 0.22rem;
+  background: #efe0bf;
+  box-shadow: 0 0 0 1px #9a7040;
+}
+
+.wallet-icon img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+}
+
+.wallet-icon-art {
+  border: 0;
+  border-radius: 0.35rem;
+  background: transparent;
+  box-shadow: none;
+}
+
+.wallet input {
+  box-sizing: border-box;
+  width: 5.5ch;
+  min-width: 5.5ch;
+  max-width: 5.5ch;
+  height: auto;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  outline: none;
+  background: transparent;
+  box-shadow: none;
+  color: #a56b3c;
+  font-family: "Times New Roman", Times, serif;
+  font-size: 0.85rem;
+  font-style: normal;
+  font-weight: 700;
+  letter-spacing: 0;
+  line-height: 1.2;
+  text-align: left;
+  text-transform: none;
+}
+
+.wallet input::placeholder {
+  color: #a56b3c;
+  font-family: "Times New Roman", Times, serif;
+  font-size: 0.62rem;
+  font-weight: 400;
+  letter-spacing: -0.02em;
+  opacity: 0.85;
+}
+
+.wallet input:focus {
+  outline: none;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.wallet input::-webkit-outer-spin-button,
+.wallet input::-webkit-inner-spin-button {
+  margin: 0;
+  -webkit-appearance: none;
+}
+
+.wallet input[type='number'] {
+  appearance: textfield;
+  -moz-appearance: textfield;
+}
+
+.budget-note {
+  color: #7a4e28;
+}
+
 .tool {
   position: relative;
   display: flex;
@@ -189,6 +340,23 @@
 .tier-pair-m {
   border-color: #8d84b0;
   background: rgba(232, 236, 248, 0.7);
+}
+
+.tier-pair-wallet {
+  flex: 0 1 11.5rem;
+  min-width: min(100%, 10.5rem);
+  border-color: #7d8f72;
+  background: rgba(228, 234, 216, 0.7);
+}
+
+.tools-row > .tool.tool-tier {
+  flex: 0 0 8.25rem;
+  min-width: 8.25rem;
+  max-width: 8.25rem;
+}
+
+.tier-pair-wallet .tier-pair-title {
+  color: #3f5340;
 }
 
 .tier-pair-title {
@@ -1239,6 +1407,19 @@ tbody th {
     align-items: end;
   }
 
+  .tier-pair {
+    grid-column: 1 / -1;
+    flex: none;
+    width: auto;
+    min-width: 0;
+  }
+
+  .wallets {
+    display: flex;
+    flex-wrap: wrap;
+    min-width: 0;
+  }
+
   .tool,
   .tool-wide,
   .tool-tier {
@@ -1246,13 +1427,6 @@ tbody th {
     width: auto;
     min-width: 0;
     max-width: none;
-  }
-
-  .tier-pair {
-    grid-column: 1 / -1;
-    flex: none;
-    width: auto;
-    min-width: 0;
   }
 
   .tier-pair .tool {
