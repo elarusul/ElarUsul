@@ -39,7 +39,13 @@ export const UI_PL: Dict = {
   'army.attacks.tipTitle': 'Liczba ataków',
   'army.attacks.tip':
     'Ile marszów planujesz: 0.5 (połowa), potem 1, 2, 3… Docelowe ilości i „do dokupienia” są mnożone przez tę liczbę (stan aktualny bez zmian). Pojemność / Dominance nadal dotyczą jednego marszu.',
-  'army.tier': 'Max tier G',
+  'army.tierGroupG': 'Tier gwardzistów',
+  'army.tierGroupM': 'Tier potworów',
+  'army.minTier': 'Min',
+  'army.minTier.tipTitle': 'Min tier G',
+  'army.minTier.tip':
+    'Najniższy poziom gwardii w składzie. Piramida i tabele liczą się tylko od tego G do max.',
+  'army.tier': 'Max',
   'army.tier.tipTitle': 'Max tier G',
   'army.tier.tip':
     'Najwyższy odblokowany poziom gwardii. Gryfy wchodzą do składu dopiero gdy max ≥ %tier%.',
@@ -47,7 +53,11 @@ export const UI_PL: Dict = {
   'army.tierS.tipTitle': 'Max tier S',
   'army.tierS.tip':
     'Najwyższy odblokowany poziom specjalistów (S1-S9). Vulture od S5; Royal Lion od S8.',
-  'army.tierM': 'Max tier M',
+  'army.minTierM': 'Min',
+  'army.minTierM.tipTitle': 'Min tier M',
+  'army.minTierM.tip':
+    'Najniższy poziom potworów w składzie (od M3). Piramida i tabele liczą się tylko od tego M do max.',
+  'army.tierM': 'Max',
   'army.tierM.tipTitle': 'Max tier M',
   'army.tierM.tip':
     'Najwyższy odblokowany poziom potworów (M3-M9). Potwory używają Dominance, nie Leadership.',
@@ -167,7 +177,13 @@ export const UI_EN: Dict = {
   'army.attacks.tipTitle': 'Attacks',
   'army.attacks.tip':
     'How many marches you plan: 0.5 (half), then 1, 2, 3…. Target amounts and “to buy” are multiplied by this number (current stock stays as entered). Capacity / Dominance still describe a single march.',
-  'army.tier': 'Max tier G',
+  'army.tierGroupG': 'Guardsmen tier',
+  'army.tierGroupM': 'Monster tier',
+  'army.minTier': 'Min',
+  'army.minTier.tipTitle': 'Min tier G',
+  'army.minTier.tip':
+    'Lowest guardsmen tier in the composition. The pyramid and tables run only from this G up to max.',
+  'army.tier': 'Max',
   'army.tier.tipTitle': 'Max tier G',
   'army.tier.tip':
     'Highest unlocked guardsmen tier. Griffins enter the composition only when max ≥ %tier%.',
@@ -175,7 +191,11 @@ export const UI_EN: Dict = {
   'army.tierS.tipTitle': 'Max tier S',
   'army.tierS.tip':
     'Highest unlocked specialists tier (S1-S9). Vulture from S5; Royal Lion from S8.',
-  'army.tierM': 'Max tier M',
+  'army.minTierM': 'Min',
+  'army.minTierM.tipTitle': 'Min tier M',
+  'army.minTierM.tip':
+    'Lowest monster tier in the composition (from M3). The pyramid and tables run only from this M up to max.',
+  'army.tierM': 'Max',
   'army.tierM.tipTitle': 'Max tier M',
   'army.tierM.tip':
     'Highest unlocked monster tier (M3-M9). Monsters use Dominance, not Leadership.',

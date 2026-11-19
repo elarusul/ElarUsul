@@ -150,12 +150,16 @@ export function cloneMonsterGrid(
   return grid;
 }
 
-export function monsterTiersUpTo(maxTier: number): number[] {
-  const capped = Math.max(
+export function monsterTiersUpTo(maxTier: number, minTier = MONSTER_MIN_TIER): number[] {
+  const cappedMax = Math.max(
     MONSTER_MIN_TIER,
     Math.min(MONSTER_PLAN_MAX_TIER, Math.floor(maxTier)),
   );
+  const cappedMin = Math.max(
+    MONSTER_MIN_TIER,
+    Math.min(cappedMax, Math.floor(minTier)),
+  );
   const tiers: number[] = [];
-  for (let t = MONSTER_MIN_TIER; t <= capped; t++) tiers.push(t);
+  for (let t = cappedMin; t <= cappedMax; t++) tiers.push(t);
   return tiers;
 }

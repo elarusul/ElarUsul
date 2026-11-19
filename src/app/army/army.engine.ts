@@ -20,6 +20,8 @@ export interface ArmyPlanInput {
   /** Target Leadership (value after slash on the march screen). */
   targetCapacity: number;
   maxTier: number;
+  /** Lowest guardsmen tier included in the pyramid. Defaults to G1. */
+  minTier?: number;
   /** Lower-tier unit multiplier vs next higher tier (classic ~2). */
   pyramidRatio: number;
   enabled: Record<ArmyType, boolean>;
@@ -86,8 +88,13 @@ export function planArmyTargets(input: ArmyPlanInput): ArmyPlanResult {
     1,
     Math.min(GUARDS_MAX_TIER, Math.floor(input.maxTier)),
   );
+  const minTier = Math.max(
+    1,
+    Math.min(maxTier, Math.floor(input.minTier ?? 1)),
+  );
   const ratio = Math.max(1.01, input.pyramidRatio);
-  const tiers = Array.from({ length: maxTier }, (_, i) => i + 1);
+  const tiers: number[] = [];
+  for (let tier = minTier; tier <= maxTier; tier++) tiers.push(tier);
   const targets: ArmyGrid = {};
   for (const tier of tiers) {
     targets[tier] = emptyRow();
@@ -100,7 +107,9 @@ export function planArmyTargets(input: ArmyPlanInput): ArmyPlanResult {
   }
 
   const weightSum = types.reduce((sum, type) => sum + TYPE_SHARE_WEIGHT[type], 0);
-  const tierWeights = tiers.map((tier) => Math.pow(ratio, maxTier - tier));
+  const tierWeight = new Map(
+    tiers.map((tier) => [tier, Math.pow(ratio, maxTier - tier)]),
+  );
 
   for (const type of types) {
     const typeBudget = (budget * TYPE_SHARE_WEIGHT[type]) / weightSum;
@@ -111,14 +120,14 @@ export function planArmyTargets(input: ArmyPlanInput): ArmyPlanResult {
     if (!typeTiers.length) continue;
 
     const typeTierWeightSum = typeTiers.reduce(
-      (sum, tier) => sum + tierWeights[tier - 1],
+      (sum, tier) => sum + (tierWeight.get(tier) ?? 0),
       0,
     );
     if (typeTierWeightSum <= 0) continue;
 
     for (const tier of typeTiers) {
       const tierLead =
-        (typeBudget * tierWeights[tier - 1]) / typeTierWeightSum;
+        (typeBudget * (tierWeight.get(tier) ?? 0)) / typeTierWeightSum;
       targets[tier][type] = Math.floor(tierLead / cost);
     }
   }
@@ -222,6 +231,8 @@ export function silverForGrid(
 export interface MonsterPlanInput {
   dominance: number;
   maxTier: number;
+  /** Lowest monster tier included in the pyramid. Defaults to M3. */
+  minTier?: number;
   pyramidRatio: number;
   enabled: Record<MonsterRace, boolean>;
   /** Official Temple tip: trim stacks to whole tens. */
@@ -254,11 +265,11 @@ export function measureDominance(grid: MonsterGrid, tiers: number[]): number {
 
 /**
  * Monster pyramid on Dominance:
- * equal Dominance share per enabled race, pyramid across M3…maxTier,
+ * equal Dominance share per enabled race, pyramid across minTier…maxTier,
  * count = floor(tierDominance / official cost). Optional ×10 trim.
  */
 export function planMonsterTargets(input: MonsterPlanInput): MonsterPlanResult {
-  const tiers = monsterTiersUpTo(input.maxTier);
+  const tiers = monsterTiersUpTo(input.maxTier, input.minTier);
   const targets = emptyMonsterGrid(tiers);
   const budget = Math.max(0, input.dominance);
   const races = MONSTER_RACES.filter((race) => input.enabled[race]);

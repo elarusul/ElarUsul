@@ -156,11 +156,20 @@ export class ArmyPage {
   protected readonly maxTier = signal(
     Math.min(GUARDS_MAX_TIER, Math.max(1, SAVED.maxTier)),
   );
+  protected readonly minTier = signal(
+    Math.min(this.maxTier(), Math.max(1, SAVED.minTier ?? 1)),
+  );
   protected readonly maxTierS = signal(SAVED.maxTierS);
   protected readonly maxTierM = signal(
     Math.min(
       MONSTER_PLAN_MAX_TIER,
       Math.max(MONSTER_MIN_TIER, SAVED.maxTierM),
+    ),
+  );
+  protected readonly minTierM = signal(
+    Math.min(
+      this.maxTierM(),
+      Math.max(MONSTER_MIN_TIER, SAVED.minTierM ?? MONSTER_MIN_TIER),
     ),
   );
   protected readonly pyramidRatio = signal(SAVED.pyramidRatio);
@@ -214,6 +223,7 @@ export class ArmyPage {
     planArmyTargets({
       targetCapacity: this.targetCapacity(),
       maxTier: this.maxTier(),
+      minTier: this.minTier(),
       pyramidRatio: this.pyramidRatio(),
       enabled: this.enabled(),
     }),
@@ -223,6 +233,7 @@ export class ArmyPage {
     planMonsterTargets({
       dominance: this.dominance(),
       maxTier: this.maxTierM(),
+      minTier: this.minTierM(),
       pyramidRatio: this.pyramidRatio(),
       enabled: this.monstersEnabled(),
       roundToTens: true,
@@ -271,8 +282,10 @@ export class ArmyPage {
         dominance: this.dominance(),
         attacks: this.attacks(),
         maxTier: this.maxTier(),
+        minTier: this.minTier(),
         maxTierS: this.maxTierS(),
         maxTierM: this.maxTierM(),
+        minTierM: this.minTierM(),
         pyramidRatio: this.pyramidRatio(),
         roundMonstersToTens: true,
         enabled: this.enabled(),
@@ -462,16 +475,34 @@ export class ArmyPage {
     signalRef.set(Number.isFinite(n) ? n : 0);
   }
 
+  protected setMinTier(value: string | number): void {
+    const n = Math.min(GUARDS_MAX_TIER, Math.max(1, this.parseAmount(value)));
+    if (n > this.maxTier()) this.maxTier.set(n);
+    this.minTier.set(n);
+  }
+
   protected setMaxTier(value: string | number): void {
-    const n = this.parseAmount(value);
-    this.maxTier.set(Math.min(GUARDS_MAX_TIER, Math.max(1, n)));
+    const n = Math.min(GUARDS_MAX_TIER, Math.max(1, this.parseAmount(value)));
+    if (n < this.minTier()) this.minTier.set(n);
+    this.maxTier.set(n);
+  }
+
+  protected setMinTierM(value: string | number): void {
+    const n = Math.min(
+      MONSTER_PLAN_MAX_TIER,
+      Math.max(MONSTER_MIN_TIER, this.parseAmount(value)),
+    );
+    if (n > this.maxTierM()) this.maxTierM.set(n);
+    this.minTierM.set(n);
   }
 
   protected setMaxTierM(value: string | number): void {
-    const n = this.parseAmount(value);
-    this.maxTierM.set(
-      Math.min(MONSTER_PLAN_MAX_TIER, Math.max(MONSTER_MIN_TIER, n)),
+    const n = Math.min(
+      MONSTER_PLAN_MAX_TIER,
+      Math.max(MONSTER_MIN_TIER, this.parseAmount(value)),
     );
+    if (n < this.minTierM()) this.minTierM.set(n);
+    this.maxTierM.set(n);
   }
 
   /** 0.5 ↔ 1 ↔ 2 ↔ … (strzałki / spinner). */
@@ -659,7 +690,9 @@ export class ArmyPage {
     try {
       const result = await scanTroopScreenshot(file, {
         guardsMaxTier: this.maxTier(),
+        guardsMinTier: this.minTier(),
         monstersMaxTier: this.maxTierM(),
+        monstersMinTier: this.minTierM(),
         onProgress: (message) => this.scanProgress.set(message),
         onHit: (hit) => this.appendScanHit(hit),
       });

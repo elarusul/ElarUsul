@@ -30,8 +30,12 @@ export interface ArmyPersistedState {
   /** Marches to prepare for: 0.5 or whole 1…99 (multiplies targets). */
   attacks: number;
   maxTier: number;
+  /** Lowest guardsmen tier in the plan. Defaults to 1. */
+  minTier: number;
   maxTierS: number;
   maxTierM: number;
+  /** Lowest monster tier in the plan. Defaults to M3. */
+  minTierM: number;
   pyramidRatio: number;
   roundMonstersToTens: boolean;
   enabled: Record<ArmyType, boolean>;
@@ -68,8 +72,10 @@ export function defaultArmyState(): ArmyPersistedState {
     dominance: 0,
     attacks: 1,
     maxTier: 5,
+    minTier: 1,
     maxTierS: 5,
     maxTierM: 5,
+    minTierM: MONSTER_MIN_TIER,
     pyramidRatio: 2,
     roundMonstersToTens: true,
     enabled: { ...DEFAULT_ENABLED },
@@ -195,6 +201,29 @@ export function loadArmyState(): ArmyPersistedState {
     const parsed = JSON.parse(raw) as Partial<ArmyPersistedState>;
     if (!parsed || typeof parsed !== 'object') return defaults;
 
+    const maxTier = Math.max(
+      1,
+      Math.min(
+        GUARDS_MAX_TIER,
+        Math.round(asFiniteNumber(parsed.maxTier, defaults.maxTier)),
+      ),
+    );
+    const minTier = Math.max(
+      1,
+      Math.min(maxTier, Math.round(asFiniteNumber(parsed.minTier, defaults.minTier))),
+    );
+    const maxTierM = Math.max(
+      MONSTER_MIN_TIER,
+      Math.min(
+        MONSTER_PLAN_MAX_TIER,
+        Math.round(asFiniteNumber(parsed.maxTierM, defaults.maxTierM)),
+      ),
+    );
+    const minTierM = Math.max(
+      MONSTER_MIN_TIER,
+      Math.min(maxTierM, Math.round(asFiniteNumber(parsed.minTierM, defaults.minTierM))),
+    );
+
     return {
       v: STORAGE_VERSION,
       targetCapacity: Math.max(0, asFiniteNumber(parsed.targetCapacity, defaults.targetCapacity)),
@@ -203,21 +232,11 @@ export function loadArmyState(): ArmyPersistedState {
         asFiniteNumber(parsed.attacks, defaults.attacks),
         defaults.attacks,
       ),
-      maxTier: Math.max(
-        1,
-        Math.min(
-          GUARDS_MAX_TIER,
-          Math.round(asFiniteNumber(parsed.maxTier, defaults.maxTier)),
-        ),
-      ),
+      maxTier,
+      minTier,
       maxTierS: Math.max(1, Math.min(9, Math.round(asFiniteNumber(parsed.maxTierS, defaults.maxTierS)))),
-      maxTierM: Math.max(
-        MONSTER_MIN_TIER,
-        Math.min(
-          MONSTER_PLAN_MAX_TIER,
-          Math.round(asFiniteNumber(parsed.maxTierM, defaults.maxTierM)),
-        ),
-      ),
+      maxTierM,
+      minTierM,
       pyramidRatio: Math.max(
         1.01,
         Math.min(5, asFiniteNumber(parsed.pyramidRatio, defaults.pyramidRatio)),

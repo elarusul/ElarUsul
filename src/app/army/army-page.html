@@ -46,47 +46,99 @@
       />
     </label>
 
-    <label class="tool tool-tier">
-      <span class="label-row">
-        {{ t()('army.tier') }}
-        <button type="button" class="info" [class.is-open]="openHint() === 'tier'" [attr.aria-label]="t()('army.info')" (click)="toggleHint('tier', $event)">i</button>
-      </span>
-      @if (openHint() === 'tier') {
-        <span class="tip" (click)="$event.stopPropagation()">
-          <strong>{{ t()('army.tier.tipTitle') }}</strong>
-          {{ t()('army.tier.tip', undefined, { tier: flyingMinTier }) }}
-        </span>
-      }
-      <input
-        type="number"
-        min="1"
-        [max]="guardsMaxTier"
-        [ngModel]="maxTier()"
-        (ngModelChange)="setMaxTier($event)"
-        name="maxTier"
-      />
-    </label>
+    <div class="tier-pair tier-pair-g">
+      <span class="tier-pair-title">{{ t()('army.tierGroupG') }}</span>
+      <div class="tier-pair-fields">
+        <label class="tool tool-tier">
+          <span class="label-row">
+            {{ t()('army.minTier') }}
+            <button type="button" class="info" [class.is-open]="openHint() === 'minTier'" [attr.aria-label]="t()('army.info')" (click)="toggleHint('minTier', $event)">i</button>
+          </span>
+          @if (openHint() === 'minTier') {
+            <span class="tip" (click)="$event.stopPropagation()">
+              <strong>{{ t()('army.minTier.tipTitle') }}</strong>
+              {{ t()('army.minTier.tip') }}
+            </span>
+          }
+          <input
+            type="number"
+            min="1"
+            [max]="guardsMaxTier"
+            [ngModel]="minTier()"
+            (ngModelChange)="setMinTier($event)"
+            name="minTier"
+          />
+        </label>
 
-    <label class="tool tool-tier">
-      <span class="label-row">
-        {{ t()('army.tierM') }}
-        <button type="button" class="info" [class.is-open]="openHint() === 'tierM'" [attr.aria-label]="t()('army.info')" (click)="toggleHint('tierM', $event)">i</button>
-      </span>
-      @if (openHint() === 'tierM') {
-        <span class="tip" (click)="$event.stopPropagation()">
-          <strong>{{ t()('army.tierM.tipTitle') }}</strong>
-          {{ t()('army.tierM.tip') }}
-        </span>
-      }
-      <input
-        type="number"
-        [min]="monsterMinTier"
-        [max]="monsterPlanMaxTier"
-        [ngModel]="maxTierM()"
-        (ngModelChange)="setMaxTierM($event)"
-        name="maxTierM"
-      />
-    </label>
+        <label class="tool tool-tier">
+          <span class="label-row">
+            {{ t()('army.tier') }}
+            <button type="button" class="info" [class.is-open]="openHint() === 'tier'" [attr.aria-label]="t()('army.info')" (click)="toggleHint('tier', $event)">i</button>
+          </span>
+          @if (openHint() === 'tier') {
+            <span class="tip" (click)="$event.stopPropagation()">
+              <strong>{{ t()('army.tier.tipTitle') }}</strong>
+              {{ t()('army.tier.tip', undefined, { tier: flyingMinTier }) }}
+            </span>
+          }
+          <input
+            type="number"
+            min="1"
+            [max]="guardsMaxTier"
+            [ngModel]="maxTier()"
+            (ngModelChange)="setMaxTier($event)"
+            name="maxTier"
+          />
+        </label>
+      </div>
+    </div>
+
+    <div class="tier-pair tier-pair-m">
+      <span class="tier-pair-title">{{ t()('army.tierGroupM') }}</span>
+      <div class="tier-pair-fields">
+        <label class="tool tool-tier">
+          <span class="label-row">
+            {{ t()('army.minTierM') }}
+            <button type="button" class="info" [class.is-open]="openHint() === 'minTierM'" [attr.aria-label]="t()('army.info')" (click)="toggleHint('minTierM', $event)">i</button>
+          </span>
+          @if (openHint() === 'minTierM') {
+            <span class="tip" (click)="$event.stopPropagation()">
+              <strong>{{ t()('army.minTierM.tipTitle') }}</strong>
+              {{ t()('army.minTierM.tip') }}
+            </span>
+          }
+          <input
+            type="number"
+            [min]="monsterMinTier"
+            [max]="monsterPlanMaxTier"
+            [ngModel]="minTierM()"
+            (ngModelChange)="setMinTierM($event)"
+            name="minTierM"
+          />
+        </label>
+
+        <label class="tool tool-tier">
+          <span class="label-row">
+            {{ t()('army.tierM') }}
+            <button type="button" class="info" [class.is-open]="openHint() === 'tierM'" [attr.aria-label]="t()('army.info')" (click)="toggleHint('tierM', $event)">i</button>
+          </span>
+          @if (openHint() === 'tierM') {
+            <span class="tip" (click)="$event.stopPropagation()">
+              <strong>{{ t()('army.tierM.tipTitle') }}</strong>
+              {{ t()('army.tierM.tip') }}
+            </span>
+          }
+          <input
+            type="number"
+            [min]="monsterMinTier"
+            [max]="monsterPlanMaxTier"
+            [ngModel]="maxTierM()"
+            (ngModelChange)="setMaxTierM($event)"
+            name="maxTierM"
+          />
+        </label>
+      </div>
+    </div>
 
     <label class="tool tool-tier">
       <span class="label-row">

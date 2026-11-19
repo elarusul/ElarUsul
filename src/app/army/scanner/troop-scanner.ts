@@ -149,7 +149,9 @@ export async function scanTroopScreenshot(
   file: Blob,
   options?: {
     guardsMaxTier?: number;
+    guardsMinTier?: number;
     monstersMaxTier?: number;
+    monstersMinTier?: number;
     onProgress?: (message: string) => void;
     /** Fired as soon as one unit tile is matched + OCR'd (before the full scan ends). */
     onHit?: (hit: ScanHit) => void;
@@ -171,6 +173,8 @@ export async function scanTroopScreenshot(
   const refs = buildScannerRefs(
     options?.guardsMaxTier,
     options?.monstersMaxTier,
+    options?.guardsMinTier,
+    options?.monstersMinTier,
   );
   const prepared = await prepareRefs(refs);
 
