@@ -126,8 +126,8 @@ interface Region {
 
 /** Bottom-right count bar — keep left edge wide enough for leading digits. */
 const REGIONS: Region[] = [
-  { x: 0.24, y: 0.7, w: 0.7, h: 0.24 },
-  { x: 0.28, y: 0.74, w: 0.66, h: 0.2 },
+  { x: 0.12, y: 0.64, w: 0.8, h: 0.3 },
+  { x: 0.2, y: 0.72, w: 0.72, h: 0.22 },
 ];
 
 function luma(r: number, g: number, b: number): number {
