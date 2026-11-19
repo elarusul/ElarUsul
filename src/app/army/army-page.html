@@ -154,7 +154,7 @@
               {{ t()('army.wallet.silver.tip') }}
             </span>
           }
-          <div class="wallet">
+          <div class="wallet" [class.is-idle]="silverOwned() == null">
             <span class="wallet-icon wallet-icon-art" aria-hidden="true">
               <img src="currencies/silver.png" alt="" (error)="hideBrokenIcon($event)" />
             </span>
@@ -181,7 +181,7 @@
               {{ t()('army.wallet.coins.tip') }}
             </span>
           }
-          <div class="wallet">
+          <div class="wallet" [class.is-idle]="coinsOwned() == null">
             <span class="wallet-icon wallet-icon-art" aria-hidden="true">
               <img src="currencies/dragon-coin.png" alt="" (error)="hideBrokenIcon($event)" />
             </span>

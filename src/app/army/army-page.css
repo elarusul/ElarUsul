@@ -184,6 +184,31 @@
   height: 1.15rem;
 }
 
+.tier-pair-wallet .wallet.is-idle {
+  border-color: #ddd6cb;
+  background: #f4f1eb;
+}
+
+.tier-pair-wallet .wallet.is-idle .wallet-icon {
+  opacity: 0.48;
+  filter: grayscale(0.65);
+}
+
+.tier-pair-wallet .wallet.is-idle input::placeholder {
+  color: #a3988c;
+  opacity: 1;
+}
+
+.tier-pair-wallet .wallet.is-idle:focus-within {
+  border-color: #c4a882;
+  background: #fffcf5;
+}
+
+.tier-pair-wallet .wallet.is-idle:focus-within .wallet-icon {
+  opacity: 1;
+  filter: none;
+}
+
 .tier-pair-wallet .wallet input {
   width: 0;
   min-width: 0;
