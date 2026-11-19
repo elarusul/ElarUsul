@@ -1,0 +1,10 @@
+{
+  "framework": "angular",
+  "buildCommand": "npm run build -- --base-href /scanner-guards/",
+  "outputDirectory": "dist/elar-usul/browser",
+  "rewrites": [
+    { "source": "/scanner-guards", "destination": "/index.html" },
+    { "source": "/scanner-guards/", "destination": "/index.html" },
+    { "source": "/scanner-guards/:path*", "destination": "/:path*" }
+  ]
+}
