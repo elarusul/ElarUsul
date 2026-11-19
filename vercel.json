@@ -1,0 +1,5 @@
+{
+  "framework": "angular",
+  "buildCommand": "npm run build:hosted",
+  "outputDirectory": "dist/elar-usul/browser"
+}

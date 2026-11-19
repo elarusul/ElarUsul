@@ -3,6 +3,8 @@
 # Compiled output
 /dist
 /tmp
+/.scanner-guards-src
+/.scanner-guards-out
 /out-tsc
 /bazel-out
 

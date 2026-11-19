@@ -5,6 +5,7 @@
     "ng": "ng",
     "start": "ng serve",
     "build": "ng build",
+    "build:hosted": "ng build && node scripts/attach-scanner-guards.mjs",
     "watch": "ng build --watch --configuration development",
     "test": "ng test"
   },
