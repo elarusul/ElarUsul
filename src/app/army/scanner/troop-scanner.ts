@@ -12,22 +12,34 @@ import {
   rgbaToDataUrl,
   type RgbaImage,
 } from './image-utils';
-import { buildScannerRefs } from './scanner-refs';
+import { guardsTierIcon } from '../troop-icons';
 import type { ScanHit, ScanRef, ScanResult } from './scanner.types';
 
 const FEAT_SIZE = 64;
-/** Accept a tile once it is the best remaining claim for that icon. */
-const MIN_SCORE = 0.64;
-/** Keep a few near-misses so a similar archer can take the next tile. */
-const PEAK_FLOOR = 0.6;
-const PEAKS_PER_ICON = 4;
+/** Portrait must clearly be this guardsman, not a mercenary or captain. */
+const MIN_SCORE = 0.7;
+/** Best portrait has to win by a visible margin. */
+const SCORE_MARGIN = 0.045;
 
-interface PreparedRef {
-  ref: ScanRef;
+type GuardKey = 'melee' | 'ranged' | 'mounted' | 'flying';
+
+const GUARD_PORTRAITS: { key: GuardKey; label: string; iconTier: number; onlyTier?: number }[] = [
+  { key: 'melee', label: 'Włócznicy', iconTier: 1 },
+  { key: 'ranged', label: 'Łucznicy', iconTier: 1 },
+  { key: 'mounted', label: 'Jeźdźcy', iconTier: 1 },
+  { key: 'flying', label: 'Gryfy', iconTier: 5, onlyTier: 5 },
+];
+
+interface Portrait {
+  key: GuardKey;
+  label: string;
+  iconTier: number;
+  /** Gryfy exist only on the orange G5 backdrop. */
+  onlyTier?: number;
   features: IconFeatures;
 }
 
-interface Peak {
+interface FoundTile {
   ref: ScanRef;
   x: number;
   y: number;
@@ -36,8 +48,8 @@ interface Peak {
 }
 
 /**
- * Reference files include a thick ribbon frame that is not on the in-game card.
- * Drop the outer ornament so matching compares the portrait, not the frame.
+ * Wiki icons wear a ribbon frame that is not on the in-game card.
+ * Keep the inner portrait.
  */
 function innerPortrait(img: RgbaImage): RgbaImage {
   const { data, width: w, height: h } = img;
@@ -70,59 +82,104 @@ function innerPortrait(img: RgbaImage): RgbaImage {
   return cropRgba(img, x, y, cw, ch);
 }
 
-async function prepareRefs(refs: ScanRef[]): Promise<PreparedRef[]> {
-  const out: PreparedRef[] = [];
-  for (const ref of refs) {
-    const img = await loadImageElement(ref.path);
-    const rgba = innerPortrait(imageToRgba(img));
-    out.push({
-      ref,
-      features: extractFeatures(resizeRgba(rgba, FEAT_SIZE, FEAT_SIZE)),
-    });
+function rgbToHsl(r: number, g: number, b: number): [number, number, number] {
+  const rr = r / 255;
+  const gg = g / 255;
+  const bb = b / 255;
+  const max = Math.max(rr, gg, bb);
+  const min = Math.min(rr, gg, bb);
+  const d = max - min;
+  const l = (max + min) / 2;
+  const s = d === 0 ? 0 : d / (1 - Math.abs(2 * l - 1));
+  let h = 0;
+  if (d !== 0) {
+    if (max === rr) h = ((gg - bb) / d) % 6;
+    else if (max === gg) h = (bb - rr) / d + 2;
+    else h = (rr - gg) / d + 4;
+    h *= 60;
+    if (h < 0) h += 360;
   }
-  return out;
+  return [h, s, l];
 }
 
-function tileSizes(width: number): number[] {
-  const min = Math.max(44, Math.round(width / 7.4));
-  const max = Math.max(min + 4, Math.min(Math.round(width / 3.5), Math.floor(width * 0.46)));
-  const sizes: number[] = [];
-  const steps = 5;
-  for (let i = 0; i < steps; i++) {
-    const size = Math.round(min + ((max - min) * i) / (steps - 1));
-    if (!sizes.includes(size)) sizes.push(size);
-  }
-  return sizes;
+/**
+ * Tier is the card backdrop, not the face.
+ * 1 gray-white, 2 green, 3 blue, 4 purple, 5 orange.
+ * Anything else is not a guardsman tier.
+ */
+function tierFromRgb(r: number, g: number, b: number): number | null {
+  const [h, s, l] = rgbToHsl(r, g, b);
+  if (s < 0.22 && l > 0.45) return 1;
+  if (s < 0.2) return null;
+  if (h >= 55 && h <= 155) return 2;
+  if (h >= 165 && h <= 235) return 3;
+  if (h >= 250 && h <= 325) return 4;
+  if ((h <= 48 || h >= 350) && l >= 0.28) return 5;
+  return null;
 }
 
-function meanColor(
-  data: Uint8ClampedArray,
-  w: number,
-  h: number,
-  x: number,
-  y: number,
-  size: number,
-): [number, number, number] {
-  let sr = 0;
-  let sg = 0;
-  let sb = 0;
+function pixel(img: RgbaImage, fx: number, fy: number): [number, number, number] {
+  const x = Math.min(img.width - 1, Math.max(0, Math.floor(img.width * fx)));
+  const y = Math.min(img.height - 1, Math.max(0, Math.floor(img.height * fy)));
+  let r = 0;
+  let g = 0;
+  let b = 0;
   let n = 0;
-  const x0 = x + Math.floor(size * 0.2);
-  const x1 = x + Math.floor(size * 0.8);
-  const y0 = y + Math.floor(size * 0.18);
-  const y1 = y + Math.floor(size * 0.7);
-  for (let yy = y0; yy < y1; yy += 2) {
-    if (yy < 0 || yy >= h) continue;
-    for (let xx = x0; xx < x1; xx += 2) {
-      if (xx < 0 || xx >= w) continue;
-      const p = (yy * w + xx) * 4;
-      sr += data[p];
-      sg += data[p + 1];
-      sb += data[p + 2];
+  for (let dy = -1; dy <= 1; dy++) {
+    for (let dx = -1; dx <= 1; dx++) {
+      const xx = x + dx;
+      const yy = y + dy;
+      if (xx < 0 || yy < 0 || xx >= img.width || yy >= img.height) continue;
+      const p = (yy * img.width + xx) * 4;
+      r += img.data[p];
+      g += img.data[p + 1];
+      b += img.data[p + 2];
       n++;
     }
   }
-  return n ? [sr / n, sg / n, sb / n] : [0, 0, 0];
+  return [r / n, g / n, b / n];
+}
+
+/** Backdrop beside the head. Null when the color is not a guardsman tier. */
+function sampleBackdrop(
+  img: RgbaImage,
+): { tier: number; rgb: [number, number, number] } | null {
+  const spots: Array<[number, number]> = [
+    [0.18, 0.16],
+    [0.28, 0.2],
+    [0.72, 0.16],
+    [0.82, 0.22],
+    [0.5, 0.12],
+  ];
+  const votes = new Map<number, { n: number; r: number; g: number; b: number }>();
+  for (const [fx, fy] of spots) {
+    const [r, g, b] = pixel(img, fx, fy);
+    const tier = tierFromRgb(r, g, b);
+    if (tier == null) continue;
+    const prev = votes.get(tier) ?? { n: 0, r: 0, g: 0, b: 0 };
+    prev.n += 1;
+    prev.r += r;
+    prev.g += g;
+    prev.b += b;
+    votes.set(tier, prev);
+  }
+  let bestTier = 0;
+  let best = { n: 0, r: 0, g: 0, b: 0 };
+  let second = 0;
+  for (const [tier, vote] of votes) {
+    if (vote.n > best.n) {
+      second = best.n;
+      best = vote;
+      bestTier = tier;
+    } else if (vote.n > second) {
+      second = vote.n;
+    }
+  }
+  if (best.n < 3 || best.n <= second) return null;
+  return {
+    tier: bestTier,
+    rgb: [best.r / best.n, best.g / best.n, best.b / best.n],
+  };
 }
 
 function colorDist(
@@ -135,6 +192,71 @@ function colorDist(
   return Math.sqrt(dr * dr + dg * dg + db * db);
 }
 
+/** G1 art sits on a pale backdrop. Remove it so only the person is compared. */
+function knockOutPaleBackdrop(img: RgbaImage): RgbaImage {
+  const data = new Uint8ClampedArray(img.data.length) as Uint8ClampedArray<ArrayBuffer>;
+  data.set(img.data);
+  for (let i = 0; i < img.width * img.height; i++) {
+    const p = i * 4;
+    const [, s, l] = rgbToHsl(data[p], data[p + 1], data[p + 2]);
+    if (s < 0.24 && l > 0.48) data[p + 3] = 0;
+  }
+  return { data, width: img.width, height: img.height };
+}
+
+/** Griffin art is painted on an orange sky. Remove that sky from the template. */
+function knockOutOrangeBackdrop(img: RgbaImage): RgbaImage {
+  const data = new Uint8ClampedArray(img.data.length) as Uint8ClampedArray<ArrayBuffer>;
+  data.set(img.data);
+  for (let i = 0; i < img.width * img.height; i++) {
+    const p = i * 4;
+    if (tierFromRgb(data[p], data[p + 1], data[p + 2]) === 5) data[p + 3] = 0;
+  }
+  return { data, width: img.width, height: img.height };
+}
+
+/** Drop the flat backdrop so the same portrait matches on every tier color. */
+function knockOutBackdrop(img: RgbaImage, bg: [number, number, number]): RgbaImage {
+  const [, s] = rgbToHsl(bg[0], bg[1], bg[2]);
+  const tol = s < 0.25 ? 46 : 70;
+  const data = new Uint8ClampedArray(img.data.length) as Uint8ClampedArray<ArrayBuffer>;
+  data.set(img.data);
+  for (let i = 0; i < img.width * img.height; i++) {
+    const p = i * 4;
+    const dist = colorDist([data[p], data[p + 1], data[p + 2]], bg);
+    if (dist < tol) data[p + 3] = 0;
+  }
+  return { data, width: img.width, height: img.height };
+}
+
+async function preparePortraits(): Promise<Portrait[]> {
+  const out: Portrait[] = [];
+  for (const portrait of GUARD_PORTRAITS) {
+    const img = await loadImageElement(guardsTierIcon(portrait.key, portrait.iconTier));
+    const inner = innerPortrait(imageToRgba(img));
+    const cut = portrait.onlyTier === 5 ? knockOutOrangeBackdrop(inner) : knockOutPaleBackdrop(inner);
+    out.push({
+      key: portrait.key,
+      label: portrait.label,
+      iconTier: portrait.iconTier,
+      onlyTier: portrait.onlyTier,
+      features: extractFeatures(resizeRgba(cut, FEAT_SIZE, FEAT_SIZE)),
+    });
+  }
+  return out;
+}
+
+function tileSizes(width: number): number[] {
+  const min = Math.max(44, Math.round(width / 7.4));
+  const max = Math.max(min + 4, Math.min(Math.round(width / 3.5), Math.floor(width * 0.46)));
+  const sizes: number[] = [];
+  for (let i = 0; i < 5; i++) {
+    const size = Math.round(min + ((max - min) * i) / 4);
+    if (!sizes.includes(size)) sizes.push(size);
+  }
+  return sizes;
+}
+
 function overlaps(
   a: { x: number; y: number; size: number },
   b: { x: number; y: number; size: number },
@@ -143,72 +265,76 @@ function overlaps(
   return Math.abs(a.x - b.x) < lim && Math.abs(a.y - b.y) < lim;
 }
 
-function findRefPeaks(shot: RgbaImage, prepared: PreparedRef): Peak[] {
-  const { data, width: w, height: h } = shot;
-  const refMean = prepared.features.mean;
+function findGuardTiles(
+  shot: RgbaImage,
+  portraits: Portrait[],
+  minTier: number,
+  maxTier: number,
+): FoundTile[] {
+  const { width: w, height: h } = shot;
   const yStart = Math.floor(h * 0.12);
-  const candidates: Array<{ x: number; y: number; size: number }> = [];
+  const found: FoundTile[] = [];
 
   for (const size of tileSizes(w)) {
     const step = Math.max(4, Math.floor(size / 5));
+    const inset = Math.round(size * 0.1);
+    const innerSize = size - inset * 2;
+    if (innerSize < 28) continue;
     for (let y = yStart; y <= h - size; y += step) {
       for (let x = 2; x <= w - size - 1; x += step) {
-        if (colorDist(meanColor(data, w, h, x, y, size), refMean) > 96) {
-          continue;
+        const card = cropRgba(shot, x + inset, y + inset, innerSize, innerSize);
+        const backdrop = sampleBackdrop(card);
+        if (!backdrop) continue;
+        if (backdrop.tier < minTier || backdrop.tier > maxTier) continue;
+        const cut = knockOutBackdrop(card, backdrop.rgb);
+        const feat = extractFeatures(resizeRgba(cut, FEAT_SIZE, FEAT_SIZE));
+        let best: Portrait | null = null;
+        let bestScore = -1;
+        let second = -1;
+        for (const portrait of portraits) {
+          if (portrait.onlyTier != null && backdrop.tier !== portrait.onlyTier) continue;
+          const score = scoreFeatures(feat, portrait.features);
+          if (score > bestScore) {
+            second = bestScore;
+            bestScore = score;
+            best = portrait;
+          } else if (score > second) {
+            second = score;
+          }
         }
-        candidates.push({ x, y, size });
+        if (!best || bestScore < MIN_SCORE) continue;
+        if (bestScore - second < SCORE_MARGIN) continue;
+        found.push({
+          ref: {
+            kind: 'guards',
+            tier: backdrop.tier,
+            key: best.key,
+            path: guardsTierIcon(best.key, best.iconTier),
+            label: `G${backdrop.tier} ${best.label}`,
+          },
+          x,
+          y,
+          size,
+          score: bestScore,
+        });
       }
     }
   }
 
-  if (!candidates.length) return [];
-
-  const scored: Peak[] = [];
-  for (const c of candidates) {
-    const patch = cropRgba(shot, c.x, c.y, c.size, c.size);
-    const feat = extractFeatures(resizeRgba(patch, FEAT_SIZE, FEAT_SIZE));
-    const score = scoreFeatures(feat, prepared.features);
-    if (score < PEAK_FLOOR) continue;
-    scored.push({ ref: prepared.ref, ...c, score });
+  found.sort((a, b) => b.score - a.score);
+  const kept: FoundTile[] = [];
+  for (const tile of found) {
+    if (kept.some((k) => overlaps(k, tile))) continue;
+    kept.push(tile);
   }
-  scored.sort((a, b) => b.score - a.score);
-
-  const peaks: Peak[] = [];
-  for (const hit of scored) {
-    if (peaks.length >= PEAKS_PER_ICON) break;
-    if (peaks.some((p) => overlaps(p, hit))) continue;
-    const refined = refinePeak(shot, prepared, hit);
-    if (refined.score < PEAK_FLOOR) continue;
-    if (peaks.some((p) => overlaps(p, refined))) continue;
-    peaks.push(refined);
-  }
-  return peaks;
-}
-
-function refinePeak(shot: RgbaImage, prepared: PreparedRef, peak: Peak): Peak {
-  let refined = peak;
-  const radius = Math.max(4, Math.floor(peak.size / 10));
-  const step = 2;
-  for (let dy = -radius; dy <= radius; dy += step) {
-    for (let dx = -radius; dx <= radius; dx += step) {
-      const nx = peak.x + dx;
-      const ny = peak.y + dy;
-      if (nx < 0 || ny < 0 || nx + peak.size > shot.width || ny + peak.size > shot.height) {
-        continue;
-      }
-      const patch = cropRgba(shot, nx, ny, peak.size, peak.size);
-      const feat = extractFeatures(resizeRgba(patch, FEAT_SIZE, FEAT_SIZE));
-      const score = scoreFeatures(feat, prepared.features);
-      if (score > refined.score) {
-        refined = { ...peak, x: nx, y: ny, score };
-      }
-    }
-  }
-  return refined;
+  return kept;
 }
 
 /**
- * Scan a Total Battle city-troops screenshot and fill only calculator units.
+ * Scan a city-troops screenshot for guardsmen only.
+ * Four portraits: spearman, archer, rider, and the G5 griffin.
+ * Tier comes from the backdrop: gray-white, green, blue, purple, orange.
+ * Gryfy are accepted only on the orange G5 backdrop. Other cards are ignored.
  */
 export async function scanTroopScreenshot(
   file: Blob,
@@ -218,13 +344,14 @@ export async function scanTroopScreenshot(
     monstersMaxTier?: number;
     monstersMinTier?: number;
     onProgress?: (message: string) => void;
-    /** Fired as soon as one unit tile is matched + OCR'd (before the full scan ends). */
     onHit?: (hit: ScanHit) => void;
   },
 ): Promise<ScanResult> {
   const t0 = performance.now();
   const progress = options?.onProgress ?? (() => undefined);
   const onHit = options?.onHit;
+  const minTier = Math.max(1, Math.min(5, options?.guardsMinTier ?? 1));
+  const maxTier = Math.max(minTier, Math.min(5, options?.guardsMaxTier ?? 5));
 
   progress('Wczytywanie screenshota…');
   const shotEl = await loadImageElement(file);
@@ -235,42 +362,14 @@ export async function scanTroopScreenshot(
   const workH = Math.round(full.height * scale);
   const shot = scale === 1 ? full : imageToRgba(shotEl, workW, workH);
 
-  progress('Przygotowanie ikon z kalkulatora…');
-  const refs = buildScannerRefs(
-    options?.guardsMaxTier,
-    options?.monstersMaxTier,
-    options?.guardsMinTier,
-    options?.monstersMinTier,
-  );
-  const prepared = await prepareRefs(refs);
-
-  const peaks: Peak[] = [];
-  let unmatchedTiles = 0;
-
-  for (let i = 0; i < prepared.length; i++) {
-    const p = prepared[i];
-    progress(`Szukam: ${p.ref.label} (${i + 1}/${prepared.length})…`);
-    const found = findRefPeaks(shot, p);
-    if (!found.length) unmatchedTiles++;
-    else peaks.push(...found);
-    await yieldToUi();
-  }
-
-  // Similar archers often claim the same card. Give each card and each icon once,
-  // highest score first, so the next peak can take the tile that was left.
-  peaks.sort((a, b) => b.score - a.score);
-  const claimed: Peak[] = [];
-  const used = new Set<ScanRef>();
-  for (const peak of peaks) {
-    if (peak.score < MIN_SCORE) continue;
-    if (used.has(peak.ref)) continue;
-    if (claimed.some((k) => overlaps(k, peak))) continue;
-    used.add(peak.ref);
-    claimed.push(peak);
-  }
+  progress('Przygotowanie portretów gwardii…');
+  const portraits = await preparePortraits();
+  progress('Szukam włóczników, łuczników, jeźdźców i gryfów…');
+  const tiles = findGuardTiles(shot, portraits, minTier, maxTier);
+  const foundKeys = new Set(tiles.map((tile) => tile.ref.key));
 
   const hits: ScanHit[] = [];
-  for (const loc of claimed) {
+  for (const loc of tiles) {
     const fx = Math.round(loc.x / scale);
     const fy = Math.round(loc.y / scale);
     const fs = Math.max(8, Math.round(loc.size / scale));
@@ -297,7 +396,7 @@ export async function scanTroopScreenshot(
   progress('Gotowe.');
   return {
     hits,
-    unmatchedTiles,
+    unmatchedTiles: GUARD_PORTRAITS.length - foundKeys.size,
     durationMs: Math.round(performance.now() - t0),
   };
 }

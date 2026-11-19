@@ -785,12 +785,18 @@ export class ArmyPage {
 
     this.current.update((grid) => {
       const next = cloneGrid(grid, this.tiers());
+      const seen = new Set<string>();
       for (const row of rows) {
         if (row.hit.ref.kind !== "guards") continue;
         if (!isArmyType(row.hit.ref.key)) continue;
         const tier = row.hit.ref.tier;
         if (!next[tier] || !isTypeAvailable(row.hit.ref.key, tier)) continue;
-        next[tier][row.hit.ref.key] = row.count;
+        const id = `${tier}:${row.hit.ref.key}`;
+        if (!seen.has(id)) {
+          next[tier][row.hit.ref.key] = 0;
+          seen.add(id);
+        }
+        next[tier][row.hit.ref.key] += row.count;
       }
       return next;
     });
