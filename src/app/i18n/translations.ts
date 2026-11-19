@@ -132,7 +132,8 @@ export const UI_PL: Dict = {
     'Ile smoczych monet możesz wydać na potwory. Puste pole nie ogranicza planu.',
   'army.wallet.tip':
     'Ile masz teraz. Puste pole nie ogranicza planu. Wpisana liczba przycina cel do największego składu w tych samych proporcjach, jaki da się dokupić.',
-  'army.budgetTrim': 'Cel przycięty do posiadanego srebra i smoczych monet.',
+  'army.budgetTrim.silver': 'Limit wojska dostosowany do ilości srebra do wydania.',
+  'army.budgetTrim.monsters': 'Limit potworów dostosowany do ilości srebra i smoczych monet do wydania.',
   'army.valueFoot': 'Razem: <strong>%total%</strong> srebra (aktualny stan × stawki)',
   'army.monsterValueFoot':
     'Razem: <strong>%silver%</strong> srebra + <strong>%coins%</strong> smoczych monet',
@@ -283,7 +284,8 @@ export const UI_EN: Dict = {
     'How many dragon coins you can spend on monsters. An empty field does not limit the plan.',
   'army.wallet.tip':
     'How much you have. An empty field does not limit the plan. A number trims the target to the largest same-proportion army you can afford.',
-  'army.budgetTrim': 'Target trimmed to the silver and dragon coins you have.',
+  'army.budgetTrim.silver': 'Army limit adjusted to the silver available to spend.',
+  'army.budgetTrim.monsters': 'Monster limit adjusted to the silver and dragon coins available to spend.',
   'army.valueFoot': 'Total: <strong>%total%</strong> silver (current state × rates)',
   'army.monsterValueFoot':
     'Total: <strong>%silver%</strong> silver + <strong>%coins%</strong> dragon coins',

@@ -457,7 +457,9 @@
         / {{ targetCapacity() | number: '1.0-0' }}
       </p>
       @if (budgetTrimmed()) {
-        <p class="foot budget-note">{{ t()('army.budgetTrim') }}</p>
+        <p class="foot budget-note">
+          {{ t()('army.budgetTrim.silver') }}
+        </p>
       }
     </article>
     </div>
@@ -615,7 +617,9 @@
         / {{ dominance() | number: '1.0-0' }}
       </p>
       @if (budgetTrimmed()) {
-        <p class="foot budget-note">{{ t()('army.budgetTrim') }}</p>
+        <p class="foot budget-note">
+          {{ t()('army.budgetTrim.monsters') }}
+        </p>
       }
     </article>
     </div>
