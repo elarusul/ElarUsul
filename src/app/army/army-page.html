@@ -407,10 +407,13 @@
     </article>
 
     <article class="panel block target">
-      <h2>
+      <h2 [class.is-limited]="budgetTrimmed()">
         {{ t()('army.target') }}
         @if (attacks() !== 1) {
           <span class="attacks-badge">×{{ attacks() }}</span>
+        }
+        @if (budgetTrimmed()) {
+          <span class="budget-note">{{ t()('army.budgetTrim.silver') }}</span>
         }
       </h2>
       <div class="table-wrap">
@@ -456,11 +459,6 @@
         }
         / {{ targetCapacity() | number: '1.0-0' }}
       </p>
-      @if (budgetTrimmed()) {
-        <p class="foot budget-note">
-          {{ t()('army.budgetTrim.silver') }}
-        </p>
-      }
     </article>
     </div>
 
@@ -567,10 +565,13 @@
     </article>
 
     <article class="panel block target">
-      <h2>
+      <h2 [class.is-limited]="budgetTrimmed()">
         {{ t()('army.monsterTarget') }}
         @if (attacks() !== 1) {
           <span class="attacks-badge">×{{ attacks() }}</span>
+        }
+        @if (budgetTrimmed()) {
+          <span class="budget-note">{{ t()('army.budgetTrim.monsters') }}</span>
         }
       </h2>
       <div class="table-wrap">
@@ -616,11 +617,6 @@
         }
         / {{ dominance() | number: '1.0-0' }}
       </p>
-      @if (budgetTrimmed()) {
-        <p class="foot budget-note">
-          {{ t()('army.budgetTrim.monsters') }}
-        </p>
-      }
     </article>
     </div>
   </div>

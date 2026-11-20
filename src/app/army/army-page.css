@@ -310,13 +310,18 @@
 }
 
 .budget-note {
+  flex: 1 0 100%;
   color: #8f2d2d;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0;
+  line-height: 1.25;
+  text-transform: none;
   white-space: normal;
 }
 
-.board-row > .block > .foot.budget-note {
-  min-height: 0;
-  margin-top: 1px;
+.board-row > .block > h2.is-limited,
+.board-row > .block > h2.is-limited .budget-note {
   color: #8f2d2d;
 }
 
@@ -601,18 +606,18 @@ table input {
 .info {
   display: inline-grid;
   place-items: center;
-  width: var(--ui-info, 1rem);
-  height: var(--ui-info, 1rem);
-  margin-inline-start: 0.3em;
+  width: calc(var(--ui-info, 1rem) * 0.82);
+  height: calc(var(--ui-info, 1rem) * 0.82);
+  margin-inline-start: 0.25em;
   padding: 0;
   border: 1px solid #c4a882;
   border-radius: 50%;
   background: #fffcf5;
   color: #8a6230;
-  vertical-align: -0.15em;
+  vertical-align: -0.12em;
   cursor: pointer;
   font: inherit;
-  font-size: 0.68rem;
+  font-size: 0.58rem;
   font-weight: 700;
   font-style: italic;
   line-height: 1;
@@ -671,7 +676,7 @@ table input {
 .board-row {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  grid-template-rows: auto 1fr auto auto;
+  grid-template-rows: auto 1fr auto;
   gap: var(--army-gap);
   align-items: stretch;
 }
@@ -679,7 +684,7 @@ table input {
 .board-row > .block {
   display: grid;
   grid-template-rows: subgrid;
-  grid-row: span 4;
+  grid-row: span 3;
   min-width: 0;
   margin-bottom: 0;
   padding: 7px 8px 6px;
